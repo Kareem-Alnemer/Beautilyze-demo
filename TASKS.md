@@ -52,6 +52,7 @@ acceptance criteria.
 - [ ] `app/jest.config.js`
 - [ ] `app/.eslintrc.cjs`
 - [ ] `app/.prettierrc`
+- [ ] Remove `--passWithNoTests` from test script once real tests exist (post-verdict-engine)
 - [ ] `inference-server/pyproject.toml`
 - [ ] `inference-server/main.py`
 - [ ] `inference-server/config.py`
