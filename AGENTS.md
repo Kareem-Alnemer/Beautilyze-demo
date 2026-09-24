@@ -69,12 +69,12 @@ docs/orchestrator/terminal-policy.md. Summary:
   supabase/seed/, scripts/, catalog/, docs/ (except docs/decisions.md and
   docs/blueprint.md), .github/workflows/.
 - Run read-only commands: ls, cat, grep, git status, git diff, git log.
-- Run tests: pnpm test, npx jest, pytest.
+- Run tests: npm test, npx jest, pytest.
 - Run linters and type checks.
 
 ### Zone B — print the command, wait for human "yes", then run once
 - git add, git commit, git push, git branch, git checkout
-- npm install, pnpm add, uv add, pip install
+- npm install, npm add, uv add, pip install
 - Any command that hits the network
 - Any Supabase CLI command
 - Any command that modifies files outside the repo root

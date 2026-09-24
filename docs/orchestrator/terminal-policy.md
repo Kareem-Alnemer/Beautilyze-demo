@@ -11,8 +11,8 @@ No approval needed. Any failure here is safe to retry or ignore.
 Allowed:
 - Read-only inspection: ls, dir, cat, type, grep, findstr, git status,
   git diff, git log, git branch --list
-- Test execution: pnpm test, npx jest, pytest, npm test
-- Lint and typecheck: pnpm lint, npx tsc --noEmit, ruff check
+- Test execution: npm test, npx jest, pytest, npm test
+- Lint and typecheck: npm lint, npx tsc --noEmit, ruff check
 - File creation inside allowed folders (see AGENTS.md §2)
 - File reading anywhere inside the repo
 
@@ -34,7 +34,7 @@ Examples:
 - git add <paths>
 - git commit -m "..."
 - git push
-- npm install <pkg>, pnpm add <pkg>, uv add <pkg>
+- npm install <pkg>, npm add <pkg>, uv add <pkg>
 - supabase db push
 - Any curl / wget / Invoke-WebRequest
 

@@ -92,9 +92,9 @@ Example:
 ## Running tests
 
     cd app
-    pnpm test                    # all tests
-    pnpm test verdict            # verdict engine only
-    pnpm test -- --watch         # watch mode
+    npm test                    # all tests
+    npm test verdict            # verdict engine only
+    npm test -- --watch         # watch mode
 
 ---
 

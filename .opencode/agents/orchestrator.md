@@ -8,7 +8,7 @@ permission:
   bash:
     "git *": ask
     "npm *": ask
-    "pnpm *": ask
+    "npm *": ask
     "uv *": ask
     "pip *": ask
     "supabase *": ask
