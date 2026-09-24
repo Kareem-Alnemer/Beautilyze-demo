@@ -318,3 +318,160 @@ monorepo or agentic-tooling experience. When explaining:
 - Explain WHY before HOW.
 - When giving commands, give the exact command and what it will do.
 - Never assume familiarity with git internals, shell piping, or build tools.
+
+## 15. Teaching mode (always on)
+
+This is a student capstone. The humans building it must be able to
+defend every line of code they submit. Teaching is not optional — it is
+part of "done."
+
+### Core principle
+
+Every explanation must answer three questions, in this order:
+
+1. **What does this do?** (plain language, no jargon)
+2. **Why is it done this way?** (the trade-off that was chosen, and what
+   was rejected)
+3. **How would a reader find it again?** (which file, which function,
+   which blueprint section)
+
+If any of the three is missing, the explanation is incomplete.
+
+### When explanations are written
+
+- After every task, before proposing the commit.
+- After every bug fix, alongside the fix.
+- After every refactor, explaining what was preserved and why.
+- Before any task that touches `app/src/verdict/` — explain the plan
+  first, then the implementation. The verdict engine is the module they
+  will be asked about most.
+
+### Where they live
+
+    docs/learning/
+    ├── README.md              (index, in chronological order)
+    ├── 001-<task-slug>.md
+    ├── 002-<task-slug>.md
+    └── ...
+
+One file per task. Numbered sequentially. Never edited after the fact —
+corrections go in a new file that references the old one.
+
+### The format of one learning file
+
+Every file follows this structure. No exceptions. This is deliberate:
+consistency is what makes the material usable for study and defense.
+
+    # <Task title>
+
+    **Date:** YYYY-MM-DD
+    **Blueprint:** §<section>
+    **Files changed:** <list>
+    **Prerequisites:** <001-..., 002-...> (which earlier files to read first)
+
+    ## 1. What this task was
+    One paragraph. What problem it solves. Why it matters to the product.
+
+    ## 2. The concept
+    The one new idea this task introduces, explained as if the reader has
+    never seen it. Define every term the first time it appears. One
+    analogy if it helps. No more than 200 words.
+
+    ## 3. The decision
+    What were the options? Why was this one chosen? What was rejected and
+    why? This is the part a defense committee will ask about.
+
+    ## 4. The code, line by line
+    For each non-trivial file:
+    - The file path.
+    - What it does in one sentence.
+    - A walkthrough of the important parts, in the order they execute.
+    - Skip boilerplate. Focus on the parts a reader would not understand
+      from the file alone.
+
+    ## 5. How to verify it works
+    The exact commands to run, what to expect, what failure looks like.
+    Copy-pasteable. No paraphrasing.
+
+    ## 6. What could go wrong
+    Two or three realistic failure modes. What they look like. What to do.
+
+    ## 7. If you remember one thing
+    One sentence. The essential takeaway. If this is all someone reads,
+    they should understand the shape of the task.
+
+    ## 8. Questions to ask yourself before the defense
+    Three to five questions a committee member could ask about this
+    task, with brief answers. This is the study guide for that task.
+
+### The rules of writing
+
+- **Plain language.** If a 15-year-old cannot follow §2, rewrite it.
+- **Define every term the first time it is used.** No exceptions.
+- **Never write "obviously" or "simply."** Nothing is obvious to someone
+  seeing it for the first time.
+- **Show, don't summarize.** Paste the important code inline. Do not say
+  "the file handles X" without showing how.
+- **One idea per paragraph.** No wall-of-text sections.
+- **Link to the blueprint section** when the code implements a spec.
+- **Link to the ADR** when a decision was made there.
+
+### The self-check before proposing a commit
+
+Before proposing any commit, the agent verifies:
+
+- [ ] A learning file was written for this task.
+- [ ] Every file in §4 has a one-sentence summary followed by a walkthrough.
+- [ ] §3 names the rejected alternative, not just the chosen one.
+- [ ] §5 commands actually work when copy-pasted.
+- [ ] §8 has at least three questions.
+- [ ] No jargon appears in §2 without a definition.
+- [ ] The file is added to the index in `docs/learning/README.md`.
+
+If any box is unchecked, the task is not done.
+
+### Team study protocol
+
+This repo supports more than one learner. Therefore:
+
+- The index in `docs/learning/README.md` is ordered by task, not by
+  person. Anyone can read from the start.
+- Each file lists its prerequisites, so a reader can follow the chain.
+- A weekly review (15 minutes, whole team) picks one recent file and
+  walks through it together.
+- Disagreements about what a file says are resolved by re-reading the
+  code, not by asking the agent again.
+- Before the demo, the agent runs "quiz mode": it asks 20 questions
+  drawn from §8 of the learning files, the team answers aloud, and the
+  agent corrects. This is the reverse-engineering practice the team
+  needs before the defense.
+
+### When the agent cannot explain something plainly
+
+If the agent cannot write §2 or §4 without jargon, that is a signal the
+code is too clever or the abstraction is wrong. Stop. Simplify the code,
+then explain it. Do not paper over confusion with more words.
+
+### What this section is NOT for
+
+- Generating marketing copy for the report.
+- Rewriting code just to make it easier to explain. The code serves the
+  product; explanations serve the humans.
+- Replacing the team's own reading. The learning files are the map. The
+  terrain is the code. The team must still walk it.
+
+### Quiz mode (used before the defense)
+
+When the human says "quiz me" or "quiz mode", the agent:
+
+1. Reads `docs/learning/README.md` for the file list.
+2. Picks 20 questions across the files, weighted toward the verdict
+   engine, the AI integration, and the privacy story.
+3. Asks them one at a time, in plain language.
+4. Waits for the human's answer.
+5. Corrects if wrong, confirms if right, and never moves on without a
+   response.
+6. At the end, reports which areas need more review.
+
+This is not optional before the demo. It is the final step of the
+project.
