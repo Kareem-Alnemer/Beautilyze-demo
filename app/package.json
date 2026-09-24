@@ -3,9 +3,8 @@
   "version": "1.0.0",
   "main": "index.ts",
   "dependencies": {
-    "@react-native/jest-preset": "^0.87.1",
     "@testing-library/react-native": "^13.2.0",
-    "@types/jest": "^29.5.0",
+    "babel-preset-expo": "~57.0.0",
     "expo": "~57.0.25",
     "expo-status-bar": "~57.0.1",
     "jest": "~29.7.0",
@@ -14,6 +13,8 @@
     "react-native": "0.86.3"
   },
   "devDependencies": {
+    "@react-native/jest-preset": "^0.86.3",
+    "@types/jest": "^29.5.14",
     "@types/react": "~19.2.2",
     "@typescript-eslint/eslint-plugin": "^8.70.1",
     "@typescript-eslint/parser": "^8.70.1",
@@ -22,6 +23,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-native": "^4.1.0",
     "prettier": "^3.9.9",
+    "ts-jest": "^29.4.13",
     "typescript": "~6.0.3"
   },
   "scripts": {
