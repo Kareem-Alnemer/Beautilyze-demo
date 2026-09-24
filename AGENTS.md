@@ -190,6 +190,20 @@ Never, under any circumstance:
 
 ---
 
+## 6.5. Planned repo cleanup (do not perform early)
+
+At the end of the build, a "Repo polish" task will move `AGENTS.md`,
+`docs/orchestrator/`, and `.agents/` into `docs/development-process/`, and
+delete `.opencode/` and `.agent-state/`.
+
+Do NOT perform this cleanup before the human explicitly asks for it. The
+contract and skills must be in their current locations for the entire
+build.
+
+Full plan: `docs/development-process/cleanup-plan.md`.
+
+---
+
 ## 7. Design rules
 
 - Every visual value (color, font, spacing, radius) MUST come from

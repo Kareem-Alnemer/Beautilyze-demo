@@ -39,6 +39,7 @@ acceptance criteria.
 - [ ] LICENSE chosen
 - [ ] docs/annotation-methodology.md written
 - [ ] opencode.json written
+- [ ] **Repo polish: archive development process artifacts** (run at the end of the build — see `docs/development-process/cleanup-plan.md`)
 
 ---
 
