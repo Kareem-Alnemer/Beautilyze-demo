@@ -135,7 +135,10 @@ acceptance criteria.
 
 ## Backlog â€” screens (blueprint Â§4)
 
-- [ ] `app/src/screens/ProfileScreen.tsx`
+- [x] `app/src/profile/ProfileScreen.tsx` (moved from screens/ to profile/)
+- [x] `app/src/profile/store.ts` + `__tests__/store.test.ts` â€” Profile Zustand store with debounced Supabase sync
+- [x] `app/src/profile/__tests__/supabaseSync.test.ts` â€” Supabase sync integration tests
+- [x] `app/src/profile/__tests__/ProfileScreen.test.tsx` â€” ProfileScreen component tests
 - [ ] `app/src/screens/SearchScreen.tsx`
 - [ ] `app/src/screens/VerdictScreen.tsx`
 - [ ] `app/src/screens/ScanScreen.tsx`
@@ -166,3 +169,6 @@ acceptance criteria.
 - [x] 2026-09-25: `app/src/catalog/normalize.ts` + `__tests__/normalize.test.ts` â€” Ingredient normalization pipeline per blueprint Â§7.5. Split (paren-aware), lowercase, trim, remove parentheticals, alias resolution (canonical-first), unmatched tracking, 30% partial_data threshold. 30 tests pass.
 - [x] 2026-09-25: `catalog/products.csv`, `catalog/ingredients.csv` â€” 10 products, 26 ingredient concerns per blueprint Â§7.2, Â§7.6, Â§7.8. Products cover major brands; ingredients cover strong_actives, barrier_support, sensitivity flags.
 - [x] 2026-09-25: `scripts/seed-catalog.mjs` â€” Seed script per ADR-003. Reads CSVs, runs normalization, generates idempotent SQL seed files (supabase/seed/001_products.sql, 002_ingredient_concerns.sql). Canonical-first alias resolution preserves specific ingredient names.
+- [x] 2026-09-25: pp/src/profile/store.ts + __tests__/store.test.ts — Profile Zustand store per blueprint §4, §5.3, §9. User fields (skin type, acne severity, age, allergies, sensitivities) + AI fields. Debounced (500ms) Supabase persistence via lazy getter for testability. 21 unit tests pass.
+- [x] 2026-09-25: pp/src/profile/__tests__/supabaseSync.test.ts — Supabase sync integration tests. Per-table mock chains for profiles/allergies/sensitivities with fluent API (delete().eq()). Verifies upsert, delete+insert, empty array handling, sync status, error handling. 8 tests pass.
+- [x] 2026-09-25: pp/src/profile/ProfileScreen.tsx + __tests__/ProfileScreen.test.tsx — Profile screen per blueprint §4, §5.3. Renders all sections with AI override banners. Conditional "Looks right" button (=0.60 confidence) and low-confidence notice (<0.60). Fixed import paths (../theme, ./store). 14 tests pass.

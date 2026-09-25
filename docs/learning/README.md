@@ -26,5 +26,6 @@ team — so that every line of code can be explained and defended.
 | 6 | 06-age-fit.md | Age fit factor with free-text parsing | 2026-09-25 |
 | 7 | 07-verdict-engine-aggregation.md | Verdict engine aggregation (precedence, score, index) | 2026-09-25 |
 | 8 | 08-catalog-pipeline.md | Catalog & ingredient database pipeline | 2026-09-25 |
+| 9 | 09-profile-store-and-screen-tests.md | Profile store, Supabase sync & ProfileScreen tests | 2026-09-25 |
 
 The agent adds one row per task.
