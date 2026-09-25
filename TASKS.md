@@ -68,9 +68,12 @@ acceptance criteria.
 ## Backlog — verdict engine (blueprint §6, §12)
 
 - [x] `app/src/verdict/types.ts`
-- [ ] `app/src/verdict/index.ts`
-- [ ] `app/src/verdict/precedence.ts`
-- [ ] `app/src/verdict/score.ts`
+- [x] `app/src/verdict/index.ts`
+- [x] `app/src/verdict/precedence.ts`
+- [x] `app/src/verdict/__tests__/precedence.test.ts`
+- [x] `app/src/verdict/score.ts`
+- [x] `app/src/verdict/__tests__/score.test.ts`
+- [x] `app/src/verdict/__tests__/index.test.ts`
 - [x] `app/src/verdict/factors/allergen.ts`
 - [x] `app/src/verdict/factors/__tests__/allergen.test.ts`
 - [x] `app/src/verdict/factors/sensitivity.ts`
@@ -81,7 +84,7 @@ acceptance criteria.
 - [x] `app/src/verdict/factors/__tests__/acneFit.test.ts`
 - [x] `app/src/verdict/factors/ageFit.ts`
 - [x] `app/src/verdict/factors/__tests__/ageFit.test.ts`
-- [ ] All 12 tests from blueprint §12
+- [x] All 12 tests from blueprint §12 (implemented in index.test.ts)
 - [ ] Fixtures (`profiles.ts`, `products.ts`)
 
 ---
@@ -156,3 +159,6 @@ acceptance criteria.
 - [x] 2026-09-25: `app/src/verdict/factors/skinTypeFit.ts` + `__tests__/skinTypeFit.test.ts` — Skin-type fit compatibility factor per blueprint §6.2, §6.3, §6.5. Checks user_skin_type against product.skin_type_tags. Returns pass/caution/fail/insufficient_data. Empty tags = caution (neutral). All 9 tests pass.
 - [x] 2026-09-25: `app/src/verdict/factors/acneFit.ts` + `__tests__/acneFit.test.ts` — Acne-concern fit compatibility factor per blueprint §6.2, §6.3, §6.4, §6.5. Three-tier severity logic (mild/moderate/severe) with ingredient-level checks for helps_with_acne, strong_actives, barrier_support. Partial data degrades severe to moderate + caution cap. Bidirectional alias resolution. All 20 tests pass.
 - [x] 2026-09-25: `app/src/verdict/factors/ageFit.ts` + `__tests__/ageFit.test.ts` — Age fit compatibility factor per blueprint §6.2, §6.3. Parses free-text age_notes into structured restrictions. Bare numeric (18+, under 30, 20-40) = strong (fail outside range). Advisory language (ideal for, teen-friendly, mature skin) = mild (always caution). Unparseable = pass. All 40 tests pass.
+- [x] 2026-09-25: `app/src/verdict/precedence.ts` + `__tests__/precedence.test.ts` — Precedence rule implementation per blueprint §6.5. Exact if/else chain: allergen fail→mismatch, allergen insufficient→caution, sensitivity fail→mismatch, sensitivity caution→caution, then compat pass count (3→match, 2→caution, 0-1→mismatch) with insufficient_data cap at caution. All 23 tests pass.
+- [x] 2026-09-25: `app/src/verdict/score.ts` + `__tests__/score.test.ts` — Compatibility score computation per blueprint §6.6. Counts pass states among 3 compat factors only. Returns {label: "Compatibility factors", passed: 0-3, total: 3}. All 9 tests pass.
+- [x] 2026-09-25: `app/src/verdict/index.ts` + `__tests__/index.test.ts` — Public evaluate() entry point per blueprint §6.1, §6.8. Runs all 5 factors, applies precedence, computes score, generates reasons & summary. 15 integration tests covering all 12 §12 scenarios + determinism + terminology checks.

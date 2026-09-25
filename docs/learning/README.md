@@ -24,5 +24,6 @@ team — so that every line of code can be explained and defended.
 | 4 | 04-skin-type-fit.md | Skin-type fit compatibility factor | 2026-09-25 |
 | 5 | 05-acne-fit.md | Acne-concern fit factor with severity tiers | 2026-09-25 |
 | 6 | 06-age-fit.md | Age fit factor with free-text parsing | 2026-09-25 |
+| 7 | 07-verdict-engine-aggregation.md | Verdict engine aggregation (precedence, score, index) | 2026-09-25 |
 
 The agent adds one row per task.
