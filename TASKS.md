@@ -79,7 +79,8 @@ acceptance criteria.
 - [x] `app/src/verdict/factors/__tests__/skinTypeFit.test.ts`
 - [x] `app/src/verdict/factors/acneFit.ts`
 - [x] `app/src/verdict/factors/__tests__/acneFit.test.ts`
-- [ ] `app/src/verdict/factors/ageFit.ts`
+- [x] `app/src/verdict/factors/ageFit.ts`
+- [x] `app/src/verdict/factors/__tests__/ageFit.test.ts`
 - [ ] All 12 tests from blueprint §12
 - [ ] Fixtures (`profiles.ts`, `products.ts`)
 
@@ -154,3 +155,4 @@ acceptance criteria.
 - [x] 2026-09-25: `app/src/verdict/factors/sensitivity.ts` + `__tests__/sensitivity.test.ts` — Sensitivity factor (hard constraint) per blueprint §6.2, §6.3. Checks user sensitivities against product ingredients flagged with `is_sensitivity_flag` in ingredient_concerns lookup. Resolves aliases bidirectionally. Returns pass/caution/insufficient_data. All 14 tests pass.
 - [x] 2026-09-25: `app/src/verdict/factors/skinTypeFit.ts` + `__tests__/skinTypeFit.test.ts` — Skin-type fit compatibility factor per blueprint §6.2, §6.3, §6.5. Checks user_skin_type against product.skin_type_tags. Returns pass/caution/fail/insufficient_data. Empty tags = caution (neutral). All 9 tests pass.
 - [x] 2026-09-25: `app/src/verdict/factors/acneFit.ts` + `__tests__/acneFit.test.ts` — Acne-concern fit compatibility factor per blueprint §6.2, §6.3, §6.4, §6.5. Three-tier severity logic (mild/moderate/severe) with ingredient-level checks for helps_with_acne, strong_actives, barrier_support. Partial data degrades severe to moderate + caution cap. Bidirectional alias resolution. All 20 tests pass.
+- [x] 2026-09-25: `app/src/verdict/factors/ageFit.ts` + `__tests__/ageFit.test.ts` — Age fit compatibility factor per blueprint §6.2, §6.3. Parses free-text age_notes into structured restrictions. Bare numeric (18+, under 30, 20-40) = strong (fail outside range). Advisory language (ideal for, teen-friendly, mature skin) = mild (always caution). Unparseable = pass. All 40 tests pass.
