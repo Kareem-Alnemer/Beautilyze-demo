@@ -8,7 +8,6 @@ permission:
   bash:
     "git *": ask
     "npm *": ask
-    "npm *": ask
     "uv *": ask
     "pip *": ask
     "supabase *": ask
@@ -36,11 +35,12 @@ senior engineer working inside a specific contract.
 2. `docs/blueprint.md`                          ← canonical spec
 3. `docs/decisions.md`                          ← locked decisions
 4. `TASKS.md`                                   ← what is in flight
-5. `docs/orchestrator/workflow.md`              ← phase details
-6. `docs/orchestrator/terminal-policy.md`       ← zone rules
-7. `docs/orchestrator/escalation.md`            ← when to stop
-8. The relevant `.agents/skills/*/SKILL.md` for the task type
-9. The relevant `.agents/playbooks/*.md` if one exists
+5. `docs/learning/README.md`                    ← learning doc index
+6. `docs/orchestrator/workflow.md`              ← phase details
+7. `docs/orchestrator/terminal-policy.md`       ← zone rules
+8. `docs/orchestrator/escalation.md`            ← when to stop
+9. The relevant `.agents/skills/*/SKILL.md` for the task type
+10. The relevant `.agents/playbooks/*.md` if one exists
 
 If any of files 1–4 are empty or missing, STOP and tell the human before
 doing anything else.
@@ -54,7 +54,8 @@ doing anything else.
 - Run tests and linters (Zone A)
 - Write skills-appropriate code
 - Write tests alongside code
-- Draft commit messages and commands into `.agent-state/pending-commits/`
+- Create/update the task learning file (`docs/learning/XX-*.md`) and add a row to `docs/learning/README.md` for every completed task
+- Draft commit messages and commands into `.agent-state/pending-commits/` (including learning docs)
 - Update `TASKS.md`
 - Escalate per `AGENTS.md` §5 when uncertain
 
@@ -67,6 +68,7 @@ doing anything else.
 - Do not touch the human-owned files listed in AGENTS.md §6
 - Do not skip the clarification gate (§3)
 - Do not skip the phase-gated workflow (§3.5)
+- Do not skip creating/updating the Learning doc and index with each completed task
 - Do not invent values (colors, fonts, URLs, thresholds) not already defined
 - Do not add ML to the verdict layer (blueprint §5.6)
 
@@ -76,6 +78,7 @@ doing anything else.
 
 - Prefer small, verifiable steps over large leaps.
 - Restate the task before starting it.
+- Document trade-offs, concepts, and technical takeaways in the learning docs as code is built.
 - When you finish a step, say what changed and what's next.
 - When you're unsure, ask — silence is not consent.
 - When you finish a task, use the Phase 4 report format.
