@@ -116,20 +116,20 @@ acceptance criteria.
 
 ## Backlog — database (blueprint §9)
 
-- [ ] `supabase/migrations/001_initial_schema.sql`
-- [ ] `supabase/migrations/002_rls_policies.sql`
-- [ ] `supabase/migrations/003_ingredient_concerns.sql`
+- [x] `supabase/migrations/001_types_and_tables.sql`
+- [x] `supabase/migrations/002_rls_policies.sql`
+- [x] `supabase/migrations/003_indexes.sql`
 
 ---
 
 ## Backlog — catalog (blueprint §7)
 
-- [ ] `catalog/products.csv` with headers
-- [ ] `catalog/ingredients.csv` with headers
-- [ ] First 10 products annotated (with cross-check)
+- [x] `catalog/products.csv` with headers
+- [x] `catalog/ingredients.csv` with headers
+- [x] First 10 products annotated (with cross-check)
+- [x] `scripts/seed-catalog.mjs`
+- [x] `app/src/catalog/normalize.ts`
 - [ ] `scripts/validate-catalog.ts`
-- [ ] `scripts/seed-catalog.ts`
-- [ ] `scripts/normalize-ingredients.ts`
 
 ---
 
@@ -162,3 +162,7 @@ acceptance criteria.
 - [x] 2026-09-25: `app/src/verdict/precedence.ts` + `__tests__/precedence.test.ts` — Precedence rule implementation per blueprint §6.5. Exact if/else chain: allergen fail→mismatch, allergen insufficient→caution, sensitivity fail→mismatch, sensitivity caution→caution, then compat pass count (3→match, 2→caution, 0-1→mismatch) with insufficient_data cap at caution. All 23 tests pass.
 - [x] 2026-09-25: `app/src/verdict/score.ts` + `__tests__/score.test.ts` — Compatibility score computation per blueprint §6.6. Counts pass states among 3 compat factors only. Returns {label: "Compatibility factors", passed: 0-3, total: 3}. All 9 tests pass.
 - [x] 2026-09-25: `app/src/verdict/index.ts` + `__tests__/index.test.ts` — Public evaluate() entry point per blueprint §6.1, §6.8. Runs all 5 factors, applies precedence, computes score, generates reasons & summary. 15 integration tests covering all 12 §12 scenarios + determinism + terminology checks.
+- [x] 2026-09-25: `supabase/migrations/001_types_and_tables.sql`, `002_rls_policies.sql`, `003_indexes.sql` — Supabase schema per blueprint §9.1, §9.2. Custom ENUMs, core tables (products, ingredient_concerns, profiles, allergies, sensitivities, checks), RLS policies (user_id = auth.uid()), GIN indexes on array columns.
+- [x] 2026-09-25: `app/src/catalog/normalize.ts` + `__tests__/normalize.test.ts` — Ingredient normalization pipeline per blueprint §7.5. Split (paren-aware), lowercase, trim, remove parentheticals, alias resolution (canonical-first), unmatched tracking, 30% partial_data threshold. 30 tests pass.
+- [x] 2026-09-25: `catalog/products.csv`, `catalog/ingredients.csv` — 10 products, 26 ingredient concerns per blueprint §7.2, §7.6, §7.8. Products cover major brands; ingredients cover strong_actives, barrier_support, sensitivity flags.
+- [x] 2026-09-25: `scripts/seed-catalog.mjs` — Seed script per ADR-003. Reads CSVs, runs normalization, generates idempotent SQL seed files (supabase/seed/001_products.sql, 002_ingredient_concerns.sql). Canonical-first alias resolution preserves specific ingredient names.
