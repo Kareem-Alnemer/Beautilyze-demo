@@ -53,10 +53,17 @@ acceptance criteria.
 - [ ] `app/.eslintrc.cjs`
 - [ ] `app/.prettierrc`
 - [ ] Remove `--passWithNoTests` from test script once real tests exist (post-verdict-engine)
-- [ ] `inference-server/pyproject.toml`
-- [ ] `inference-server/main.py`
-- [ ] `inference-server/config.py`
-- [ ] `.env.example`
+- [x] `inference-server/pyproject.toml`
+- [x] `inference-server/main.py`
+- [x] `inference-server/config.py`
+- [x] `inference-server/.env.example`
+- [x] `inference-server/inference_server/schemas/prediction.py`
+- [x] `inference-server/inference_server/preprocessing/image.py`
+- [x] `inference-server/inference_server/models/loader.py`
+- [x] `inference-server/inference_server/models/skin_type.py`
+- [x] `inference-server/inference_server/models/acne_severity.py`
+- [x] `inference-server/inference_server/utils/privacy.py`
+- [x] `inference-server/tests/` (53 tests)
 - [ ] `.github/workflows/app-tests.yml`
 - [ ] `.github/workflows/server-tests.yml`
 - [ ] `.github/workflows/catalog-validate.yml`
@@ -181,15 +188,26 @@ acceptance criteria.
 - [x] 2026-09-25: pp/src/profile/store.ts + __tests__/store.test.ts ï¿½ Profile Zustand store per blueprint ï¿½4, ï¿½5.3, ï¿½9. User fields (skin type, acne severity, age, allergies, sensitivities) + AI fields. Debounced (500ms) Supabase persistence via lazy getter for testability. 21 unit tests pass.
 - [x] 2026-09-25: pp/src/profile/__tests__/supabaseSync.test.ts ï¿½ Supabase sync integration tests. Per-table mock chains for profiles/allergies/sensitivities with fluent API (delete().eq()). Verifies upsert, delete+insert, empty array handling, sync status, error handling. 8 tests pass.
 - [x] 2026-09-25: pp/src/profile/ProfileScreen.tsx + __tests__/ProfileScreen.test.tsx ï¿½ Profile screen per blueprint ï¿½4, ï¿½5.3. Renders all sections with AI override banners. Conditional "Looks right" button (=0.60 confidence) and low-confidence notice (<0.60). Fixed import paths (../theme, ./store). 14 tests pass.
-- [x] 2026-09-25: pp/src/catalog/api.ts — Supabase product queries (searchProducts, getProduct, getRecentChecks) per blueprint §7, §9.
-- [x] 2026-09-25: pp/src/verdict/hooks/useVerdict.ts — Hook fetching product, reading profile, calling evaluate() per blueprint §5.1, §6.8. Returns {verdict, product, loading, error, refetch}.
-- [x] 2026-09-25: pp/src/components/VerdictBadge.tsx — Hero badge per design doc §1. Full-width, paper bg, 2px verdict border, Fraunces 32pt verdict word, Inter 16pt summary.
-- [x] 2026-09-25: pp/src/components/ScoreLine.tsx — Score line per design doc §2, blueprint §6.6. "X of 3 compatibility factors matched. Y hard constraint(s) flagged."
-- [x] 2026-09-25: pp/src/components/HardConstraintBanner.tsx — Hard constraints block per design doc §3. Shows only when flagged; allergen/sensitivity with icons, names, results, reasons.
-- [x] 2026-09-25: pp/src/components/FactorBreakdownCard.tsx — Collapsible factor cards per design doc §4. Fixed order (skin-type, acne, age); icon, name, result, reason (2-line clamp).
-- [x] 2026-09-25: pp/src/components/DisclaimerBlock.tsx — Fixed bottom disclaimer per design doc §5, blueprint §10.1. Verbatim text, paper bg, thin rule, no close button.
-- [x] 2026-09-25: pp/src/components/ProductSearchBar.tsx — Search input with 300ms debounce, Supabase query, 40x40 thumbnails, dropdown results. Fixed always-render TextInput.
-- [x] 2026-09-25: pp/src/components/RecentChecksList.tsx — Recent checks from Supabase checks table (limit 5), thumbnails, verdict badges, empty state.
-- [x] 2026-09-25: pp/src/screens/SearchScreen.tsx — Search bar + recent checks. Product select ? navigate to /verdict/:productId.
-- [x] 2026-09-25: pp/src/screens/VerdictScreen.tsx — Locked composition per design doc. All 6 sections in order: byline, badge, score, hard constraints, compat factors, disclaimer + action.
+- [x] 2026-09-25: pp/src/catalog/api.ts ï¿½ Supabase product queries (searchProducts, getProduct, getRecentChecks) per blueprint ï¿½7, ï¿½9.
+- [x] 2026-09-25: pp/src/verdict/hooks/useVerdict.ts ï¿½ Hook fetching product, reading profile, calling evaluate() per blueprint ï¿½5.1, ï¿½6.8. Returns {verdict, product, loading, error, refetch}.
+- [x] 2026-09-25: pp/src/components/VerdictBadge.tsx ï¿½ Hero badge per design doc ï¿½1. Full-width, paper bg, 2px verdict border, Fraunces 32pt verdict word, Inter 16pt summary.
+- [x] 2026-09-25: pp/src/components/ScoreLine.tsx ï¿½ Score line per design doc ï¿½2, blueprint ï¿½6.6. "X of 3 compatibility factors matched. Y hard constraint(s) flagged."
+- [x] 2026-09-25: pp/src/components/HardConstraintBanner.tsx ï¿½ Hard constraints block per design doc ï¿½3. Shows only when flagged; allergen/sensitivity with icons, names, results, reasons.
+- [x] 2026-09-25: pp/src/components/FactorBreakdownCard.tsx ï¿½ Collapsible factor cards per design doc ï¿½4. Fixed order (skin-type, acne, age); icon, name, result, reason (2-line clamp).
+- [x] 2026-09-25: pp/src/components/DisclaimerBlock.tsx ï¿½ Fixed bottom disclaimer per design doc ï¿½5, blueprint ï¿½10.1. Verbatim text, paper bg, thin rule, no close button.
+- [x] 2026-09-25: pp/src/components/ProductSearchBar.tsx ï¿½ Search input with 300ms debounce, Supabase query, 40x40 thumbnails, dropdown results. Fixed always-render TextInput.
+- [x] 2026-09-25: pp/src/components/RecentChecksList.tsx ï¿½ Recent checks from Supabase checks table (limit 5), thumbnails, verdict badges, empty state.
+- [x] 2026-09-25: pp/src/screens/SearchScreen.tsx ï¿½ Search bar + recent checks. Product select ? navigate to /verdict/:productId.
+- [x] 2026-09-25: pp/src/screens/VerdictScreen.tsx ï¿½ Locked composition per design doc. All 6 sections in order: byline, badge, score, hard constraints, compat factors, disclaimer + action.
 - [x] 2026-09-25: Tests for all components and screens (288 total tests pass).
+- [x] 2026-09-25: inference-server/pyproject.toml ï¿½ FastAPI project config with mock/PyTorch/ONNX optional deps, pytest config.
+- [x] 2026-09-25: inference-server/.env.example ï¿½ Environment variables template (MODEL_MODE, model paths, CORS, image limits).
+- [x] 2026-09-25: inference-server/inference_server/config.py ï¿½ Pydantic Settings for env-driven config per blueprint ï¿½8.1.
+- [x] 2026-09-25: inference-server/inference_server/schemas/prediction.py ï¿½ Pydantic models per blueprint ï¿½5.2 AI Output Contract (label, confidence, model_version).
+- [x] 2026-09-25: inference-server/inference_server/preprocessing/image.py ï¿½ Image validation, loading, preprocessing (224x224, ImageNet norm) per ï¿½8.3.
+- [x] 2026-09-25: inference-server/inference_server/models/loader.py ï¿½ Model factory (mock/pytorch/onnx) with deterministic MockModel per ï¿½5.1, ï¿½5.2.
+- [x] 2026-09-25: inference-server/inference_server/models/skin_type.py ï¿½ Skin type prediction wrapper returning PredictResponse.
+- [x] 2026-09-25: inference-server/inference_server/models/acne_severity.py ï¿½ Acne severity prediction wrapper returning PredictResponse.
+- [x] 2026-09-25: inference-server/inference_server/main.py ï¿½ FastAPI app with /health, /predict/skin-type, /predict/acne-severity per ï¿½8.3.
+- [x] 2026-09-25: inference-server/inference_server/utils/privacy.py ï¿½ Image discard utilities per ï¿½8.4 (in-memory only, no disk writes).
+- [x] 2026-09-25: inference-server/tests/ ï¿½ 53 pytest tests (schemas, preprocessing, mock models, endpoints) covering all 17 test cases.
