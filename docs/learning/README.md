@@ -21,5 +21,6 @@ team — so that every line of code can be explained and defended.
 | 1 | 01-verdict-engine-types.md | Verdict engine type definitions | 2026-09-25 |
 | 2 | 02-allergen-factor.md | Allergen factor implementation & exact matching | 2026-09-25 |
 | 3 | 03-sensitivity-factor.md | Sensitivity factor implementation & alias resolution | 2026-09-25 |
+| 4 | 04-skin-type-fit.md | Skin-type fit compatibility factor | 2026-09-25 |
 
 The agent adds one row per task.
