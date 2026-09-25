@@ -73,7 +73,8 @@ acceptance criteria.
 - [ ] `app/src/verdict/score.ts`
 - [x] `app/src/verdict/factors/allergen.ts`
 - [x] `app/src/verdict/factors/__tests__/allergen.test.ts`
-- [ ] `app/src/verdict/factors/sensitivity.ts`
+- [x] `app/src/verdict/factors/sensitivity.ts`
+- [x] `app/src/verdict/factors/__tests__/sensitivity.test.ts`
 - [ ] `app/src/verdict/factors/skinTypeFit.ts`
 - [ ] `app/src/verdict/factors/acneFit.ts`
 - [ ] `app/src/verdict/factors/ageFit.ts`
@@ -148,3 +149,4 @@ acceptance criteria.
 
 - [x] 2026-09-25: `app/src/verdict/types.ts` — Verdict engine type definitions (Profile, Product, FactorResult, Verdict, etc.) per blueprint §6.1, §6.3, §6.8
 - [x] 2026-09-25: `app/src/verdict/factors/allergen.ts` + `__tests__/allergen.test.ts` — Declared-allergen conflict factor (hard constraint) per blueprint §6.2, §6.3, §6.7. Uses `allergen.toLowerCase().trim()` against `ingredients_normalized`. Returns pass/fail/insufficient_data. All 9 tests pass.
+- [x] 2026-09-25: `app/src/verdict/factors/sensitivity.ts` + `__tests__/sensitivity.test.ts` — Sensitivity factor (hard constraint) per blueprint §6.2, §6.3. Checks user sensitivities against product ingredients flagged with `is_sensitivity_flag` in ingredient_concerns lookup. Resolves aliases bidirectionally. Returns pass/caution/insufficient_data. All 14 tests pass.
