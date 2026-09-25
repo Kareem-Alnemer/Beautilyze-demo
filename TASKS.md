@@ -71,7 +71,8 @@ acceptance criteria.
 - [ ] `app/src/verdict/index.ts`
 - [ ] `app/src/verdict/precedence.ts`
 - [ ] `app/src/verdict/score.ts`
-- [ ] `app/src/verdict/factors/allergenConflict.ts`
+- [x] `app/src/verdict/factors/allergen.ts`
+- [x] `app/src/verdict/factors/__tests__/allergen.test.ts`
 - [ ] `app/src/verdict/factors/sensitivity.ts`
 - [ ] `app/src/verdict/factors/skinTypeFit.ts`
 - [ ] `app/src/verdict/factors/acneFit.ts`
@@ -146,3 +147,4 @@ acceptance criteria.
 ## Done
 
 - [x] 2026-09-25: `app/src/verdict/types.ts` — Verdict engine type definitions (Profile, Product, FactorResult, Verdict, etc.) per blueprint §6.1, §6.3, §6.8
+- [x] 2026-09-25: `app/src/verdict/factors/allergen.ts` + `__tests__/allergen.test.ts` — Declared-allergen conflict factor (hard constraint) per blueprint §6.2, §6.3, §6.7. Uses `allergen.toLowerCase().trim()` against `ingredients_normalized`. Returns pass/fail/insufficient_data. All 9 tests pass.

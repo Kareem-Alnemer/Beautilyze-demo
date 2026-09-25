@@ -19,5 +19,6 @@ team — so that every line of code can be explained and defended.
 | # | File | Topic | Date |
 |---|------|-------|------|
 | 1 | 01-verdict-engine-types.md | Verdict engine type definitions | 2026-09-25 |
+| 2 | 02-allergen-factor.md | Allergen factor implementation & exact matching | 2026-09-25 |
 
 The agent adds one row per task.
