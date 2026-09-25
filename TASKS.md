@@ -67,7 +67,7 @@ acceptance criteria.
 
 ## Backlog — verdict engine (blueprint §6, §12)
 
-- [ ] `app/src/verdict/types.ts`
+- [x] `app/src/verdict/types.ts`
 - [ ] `app/src/verdict/index.ts`
 - [ ] `app/src/verdict/precedence.ts`
 - [ ] `app/src/verdict/score.ts`
@@ -145,4 +145,4 @@ acceptance criteria.
 
 ## Done
 
-(agent moves completed tasks here with a date)
+- [x] 2026-09-25: `app/src/verdict/types.ts` — Verdict engine type definitions (Profile, Product, FactorResult, Verdict, etc.) per blueprint §6.1, §6.3, §6.8
