@@ -8,7 +8,7 @@ import { AgeInput } from './components/AgeInput';
 import { AllergyManager } from './components/AllergyManager';
 import { SensitivityManager } from './components/SensitivityManager';
 import { AIOverrideBanner } from './components/AIOverrideBanner';
-import { SkinType, AcneSeverity } from '../../verdict/types';
+import { SkinType, AcneSeverity } from '../verdict/types';
 
 export const ProfileScreen: React.FC = () => {
   const { colors, spacing } = theme;
@@ -63,8 +63,8 @@ export const ProfileScreen: React.FC = () => {
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         {/* Header */}
         <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.text }]}>Your Profile</Text>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+          <Text style={[styles.title, { color: colors.text.primary }]}>Your Profile</Text>
+          <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
             Set your skin profile for personalized product checks
           </Text>
         </View>
@@ -107,7 +107,7 @@ export const ProfileScreen: React.FC = () => {
 
         {/* Age Section */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Age</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>Age</Text>
           <AgeInput
             value={age}
             onChange={setAge}
@@ -141,7 +141,7 @@ export const ProfileScreen: React.FC = () => {
             onPress={handleSave}
             style={[
               styles.saveButton,
-              { backgroundColor: colors.primary },
+              { backgroundColor: colors.brand.accent },
             ]}
             accessibilityLabel="Save profile"
           >
@@ -155,7 +155,7 @@ export const ProfileScreen: React.FC = () => {
             onPress={handleReset}
             style={styles.resetButton}
           >
-            <Text style={[styles.resetButtonText, { color: colors.textSecondary }]}>
+            <Text style={[styles.resetButtonText, { color: colors.text.secondary }]}>
               Reset Profile
             </Text>
           </TouchableOpacity>
@@ -168,54 +168,60 @@ export const ProfileScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: theme.colors.surface.base,
   },
   scrollContent: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: theme.spacing.lg,
+    paddingBottom: theme.spacing.xxxl,
   },
   header: {
-    marginBottom: 24,
+    marginBottom: theme.spacing.xl,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
-    marginBottom: 4,
+    fontFamily: theme.typography.font.heading,
+    fontSize: theme.typography.size.xxl,
+    fontWeight: theme.typography.weight.semibold,
+    marginBottom: theme.spacing.xs,
   },
   subtitle: {
-    fontSize: 16,
+    fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.md,
+    lineHeight: theme.typography.lineHeight.normal * theme.typography.size.md,
   },
   section: {
-    marginBottom: 24,
+    marginBottom: theme.spacing.xl,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 12,
+    fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.lg,
+    fontWeight: theme.typography.weight.semibold,
+    marginBottom: theme.spacing.sm,
   },
   saveButtonContainer: {
-    marginTop: 24,
-    marginBottom: 12,
+    marginTop: theme.spacing.xl,
+    marginBottom: theme.spacing.md,
   },
   saveButton: {
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingVertical: theme.spacing.md,
+    borderRadius: theme.radii.md,
     alignItems: 'center',
   },
   saveButtonText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#fff',
+    fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.lg,
+    fontWeight: theme.typography.weight.semibold,
+    color: theme.colors.text.onAccent,
   },
   resetButtonContainer: {
-    marginBottom: 16,
+    marginBottom: theme.spacing.lg,
   },
   resetButton: {
-    paddingVertical: 12,
+    paddingVertical: theme.spacing.sm,
     alignItems: 'center',
   },
   resetButtonText: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.md,
+    fontWeight: theme.typography.weight.medium,
   },
 });

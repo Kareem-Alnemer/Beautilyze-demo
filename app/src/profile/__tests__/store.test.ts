@@ -1,14 +1,11 @@
-import { act } from '@testing-library/react-native';
-import { useProfileStore } from '../store';
-
-// Mock AsyncStorage
+// Mock AsyncStorage BEFORE importing the store
 jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn(() => Promise.resolve(null)),
   setItem: jest.fn(() => Promise.resolve()),
   removeItem: jest.fn(() => Promise.resolve()),
-}));
+}), { virtual: true });
 
-// Mock Supabase
+// Mock Supabase BEFORE importing the store
 jest.mock('../../lib/supabase', () => ({
   supabase: {
     auth: {
@@ -25,12 +22,16 @@ jest.mock('../../lib/supabase', () => ({
       })),
     })),
   },
-}));
+}), { virtual: true });
+
+import { act } from '@testing-library/react-native';
+import { useProfileStore } from '../store';
 
 describe('useProfileStore', () => {
   beforeEach(() => {
     // Reset store to initial state
     useProfileStore.setState({
+      user_id: null,
       user_skin_type: null,
       user_acne_severity: null,
       age: null,
@@ -50,6 +51,7 @@ describe('useProfileStore', () => {
   describe('initial state', () => {
     it('has correct initial values', () => {
       const state = useProfileStore.getState();
+      expect(state.user_id).toBeNull();
       expect(state.user_skin_type).toBeNull();
       expect(state.user_acne_severity).toBeNull();
       expect(state.age).toBeNull();

@@ -139,8 +139,17 @@ acceptance criteria.
 - [x] `app/src/profile/store.ts` + `__tests__/store.test.ts` â€” Profile Zustand store with debounced Supabase sync
 - [x] `app/src/profile/__tests__/supabaseSync.test.ts` â€” Supabase sync integration tests
 - [x] `app/src/profile/__tests__/ProfileScreen.test.tsx` â€” ProfileScreen component tests
-- [ ] `app/src/screens/SearchScreen.tsx`
-- [ ] `app/src/screens/VerdictScreen.tsx`
+- [x] `app/src/screens/SearchScreen.tsx` â€” Search with debounced Supabase query, recent checks
+- [x] `app/src/screens/VerdictScreen.tsx` â€” Locked composition per design doc
+- [x] `app/src/components/VerdictBadge.tsx` â€” Hero verdict badge
+- [x] `app/src/components/ScoreLine.tsx` â€” Compatibility factors score
+- [x] `app/src/components/HardConstraintBanner.tsx` â€” Hard constraints block
+- [x] `app/src/components/FactorBreakdownCard.tsx` â€” Collapsible factor cards
+- [x] `app/src/components/DisclaimerBlock.tsx` â€” Fixed bottom disclaimer
+- [x] `app/src/components/ProductSearchBar.tsx` â€” Search input with dropdown
+- [x] `app/src/components/RecentChecksList.tsx` â€” Recent checks from Supabase
+- [x] `app/src/verdict/hooks/useVerdict.ts` â€” Fetch product + evaluate verdict hook
+- [x] `app/src/catalog/api.ts` â€” Supabase product queries
 - [ ] `app/src/screens/ScanScreen.tsx`
 - [ ] `app/src/screens/HomeScreen.tsx`
 - [ ] `app/src/screens/HistoryScreen.tsx` (should-have)
@@ -169,6 +178,18 @@ acceptance criteria.
 - [x] 2026-09-25: `app/src/catalog/normalize.ts` + `__tests__/normalize.test.ts` â€” Ingredient normalization pipeline per blueprint Â§7.5. Split (paren-aware), lowercase, trim, remove parentheticals, alias resolution (canonical-first), unmatched tracking, 30% partial_data threshold. 30 tests pass.
 - [x] 2026-09-25: `catalog/products.csv`, `catalog/ingredients.csv` â€” 10 products, 26 ingredient concerns per blueprint Â§7.2, Â§7.6, Â§7.8. Products cover major brands; ingredients cover strong_actives, barrier_support, sensitivity flags.
 - [x] 2026-09-25: `scripts/seed-catalog.mjs` â€” Seed script per ADR-003. Reads CSVs, runs normalization, generates idempotent SQL seed files (supabase/seed/001_products.sql, 002_ingredient_concerns.sql). Canonical-first alias resolution preserves specific ingredient names.
-- [x] 2026-09-25: pp/src/profile/store.ts + __tests__/store.test.ts — Profile Zustand store per blueprint §4, §5.3, §9. User fields (skin type, acne severity, age, allergies, sensitivities) + AI fields. Debounced (500ms) Supabase persistence via lazy getter for testability. 21 unit tests pass.
-- [x] 2026-09-25: pp/src/profile/__tests__/supabaseSync.test.ts — Supabase sync integration tests. Per-table mock chains for profiles/allergies/sensitivities with fluent API (delete().eq()). Verifies upsert, delete+insert, empty array handling, sync status, error handling. 8 tests pass.
-- [x] 2026-09-25: pp/src/profile/ProfileScreen.tsx + __tests__/ProfileScreen.test.tsx — Profile screen per blueprint §4, §5.3. Renders all sections with AI override banners. Conditional "Looks right" button (=0.60 confidence) and low-confidence notice (<0.60). Fixed import paths (../theme, ./store). 14 tests pass.
+- [x] 2026-09-25: pp/src/profile/store.ts + __tests__/store.test.ts ï¿½ Profile Zustand store per blueprint ï¿½4, ï¿½5.3, ï¿½9. User fields (skin type, acne severity, age, allergies, sensitivities) + AI fields. Debounced (500ms) Supabase persistence via lazy getter for testability. 21 unit tests pass.
+- [x] 2026-09-25: pp/src/profile/__tests__/supabaseSync.test.ts ï¿½ Supabase sync integration tests. Per-table mock chains for profiles/allergies/sensitivities with fluent API (delete().eq()). Verifies upsert, delete+insert, empty array handling, sync status, error handling. 8 tests pass.
+- [x] 2026-09-25: pp/src/profile/ProfileScreen.tsx + __tests__/ProfileScreen.test.tsx ï¿½ Profile screen per blueprint ï¿½4, ï¿½5.3. Renders all sections with AI override banners. Conditional "Looks right" button (=0.60 confidence) and low-confidence notice (<0.60). Fixed import paths (../theme, ./store). 14 tests pass.
+- [x] 2026-09-25: pp/src/catalog/api.ts — Supabase product queries (searchProducts, getProduct, getRecentChecks) per blueprint §7, §9.
+- [x] 2026-09-25: pp/src/verdict/hooks/useVerdict.ts — Hook fetching product, reading profile, calling evaluate() per blueprint §5.1, §6.8. Returns {verdict, product, loading, error, refetch}.
+- [x] 2026-09-25: pp/src/components/VerdictBadge.tsx — Hero badge per design doc §1. Full-width, paper bg, 2px verdict border, Fraunces 32pt verdict word, Inter 16pt summary.
+- [x] 2026-09-25: pp/src/components/ScoreLine.tsx — Score line per design doc §2, blueprint §6.6. "X of 3 compatibility factors matched. Y hard constraint(s) flagged."
+- [x] 2026-09-25: pp/src/components/HardConstraintBanner.tsx — Hard constraints block per design doc §3. Shows only when flagged; allergen/sensitivity with icons, names, results, reasons.
+- [x] 2026-09-25: pp/src/components/FactorBreakdownCard.tsx — Collapsible factor cards per design doc §4. Fixed order (skin-type, acne, age); icon, name, result, reason (2-line clamp).
+- [x] 2026-09-25: pp/src/components/DisclaimerBlock.tsx — Fixed bottom disclaimer per design doc §5, blueprint §10.1. Verbatim text, paper bg, thin rule, no close button.
+- [x] 2026-09-25: pp/src/components/ProductSearchBar.tsx — Search input with 300ms debounce, Supabase query, 40x40 thumbnails, dropdown results. Fixed always-render TextInput.
+- [x] 2026-09-25: pp/src/components/RecentChecksList.tsx — Recent checks from Supabase checks table (limit 5), thumbnails, verdict badges, empty state.
+- [x] 2026-09-25: pp/src/screens/SearchScreen.tsx — Search bar + recent checks. Product select ? navigate to /verdict/:productId.
+- [x] 2026-09-25: pp/src/screens/VerdictScreen.tsx — Locked composition per design doc. All 6 sections in order: byline, badge, score, hard constraints, compat factors, disclaimer + action.
+- [x] 2026-09-25: Tests for all components and screens (288 total tests pass).

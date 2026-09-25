@@ -9,6 +9,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
  * AI fields are for display/override only.
  */
 export interface ProfileState {
+  // User identity (from Supabase Auth)
+  user_id: string | null;
+
   // User-set fields (source of truth for verdict)
   user_skin_type: SkinType | null;
   user_acne_severity: AcneSeverity | null;
@@ -30,6 +33,9 @@ export interface ProfileState {
 }
 
 interface ProfileActions {
+  // User identity
+  setUserId: (id: string | null) => void;
+
   // User field setters
   setUserSkinType: (type: SkinType | null) => void;
   setUserAcneSeverity: (severity: AcneSeverity | null) => void;
@@ -62,6 +68,7 @@ interface ProfileActions {
 type ProfileStore = ProfileState & ProfileActions;
 
 const initialState: ProfileState = {
+  user_id: null,
   user_skin_type: null,
   user_acne_severity: null,
   age: null,
@@ -81,21 +88,21 @@ const initialState: ProfileState = {
  * Debounce utility for persistence
  * Returns a function that returns a promise resolving when the debounced fn completes
  */
-function debounce<T extends (...args: unknown[]) => Promise<unknown>>(
+function debounce<T extends (...args: unknown[]) => Promise<void>>(
   fn: T,
   delay: number
-): (...args: Parameters<T>) => Promise<ReturnType<T>> {
+): (...args: Parameters<T>) => Promise<void> {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
-  let pendingPromise: Promise<ReturnType<T>> | null = null;
+  let pendingPromise: Promise<void> | null = null;
   
-  return (...args: Parameters<T>): Promise<ReturnType<T>> => {
+  return (...args: Parameters<T>): Promise<void> => {
     if (timeoutId) clearTimeout(timeoutId);
     
-    pendingPromise = new Promise((resolve, reject) => {
+    pendingPromise = new Promise<void>((resolve, reject) => {
       timeoutId = setTimeout(async () => {
         try {
-          const result = await fn(...args);
-          resolve(result);
+          await fn(...args);
+          resolve();
         } catch (error) {
           reject(error);
         }
@@ -125,6 +132,9 @@ export function setSupabaseClientForTest(client: any) {
  */
 function createActions(set: any, get: any) {
   return {
+    // --- User identity ---
+    setUserId: (id: string | null) => set({ user_id: id }),
+
     // --- User field setters ---
     setUserSkinType: (type: SkinType | null) => set({ user_skin_type: type }),
     setUserAcneSeverity: (severity: AcneSeverity | null) => set({ user_acne_severity: severity }),
@@ -229,7 +239,7 @@ function createActions(set: any, get: any) {
         if (state.allergies.length > 0) {
           const { error: allergyInsertError } = await supabase
             .from('allergies')
-            .insert(state.allergies.map((a) => ({ user_id: user.id, allergen: a })));
+            .insert(state.allergies.map((a: string) => ({ user_id: user.id, allergen: a })));
           if (allergyInsertError) throw allergyInsertError;
         }
 
@@ -243,7 +253,7 @@ function createActions(set: any, get: any) {
         if (state.sensitivities.length > 0) {
           const { error: sensInsertError } = await supabase
             .from('sensitivities')
-            .insert(state.sensitivities.map((s) => ({ user_id: user.id, sensitivity: s })));
+            .insert(state.sensitivities.map((s: string) => ({ user_id: user.id, sensitivity: s })));
           if (sensInsertError) throw sensInsertError;
         }
 
@@ -287,6 +297,7 @@ export const useProfileStore = create<ProfileStore>()(
           name: 'beautilyze-profile',
           storage: createJSONStorage(() => AsyncStorage),
           partialize: (state) => ({
+            user_id: state.user_id,
             user_skin_type: state.user_skin_type,
             user_acne_severity: state.user_acne_severity,
             age: state.age,
