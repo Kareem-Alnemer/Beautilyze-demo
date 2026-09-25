@@ -42,7 +42,7 @@ export interface FactorResult {
 export interface HardConstraintResult {
   name: 'declared_allergen_conflict' | 'sensitivity';
   result: FactorState;
-  reason?: string;
+  reason: string;
 }
 
 export type CompatibilityFactors = [
