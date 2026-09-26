@@ -64,8 +64,7 @@ acceptance criteria.
 - [x] `inference-server/inference_server/models/acne_severity.py`
 - [x] `inference-server/inference_server/utils/privacy.py`
 - [x] `inference-server/tests/` (53 tests)
-- [ ] `.github/workflows/app-tests.yml`
-- [ ] `.github/workflows/server-tests.yml`
+- [x] `.github/workflows/ci.yml` (unified CI: mobile-test + inference-test)
 - [ ] `.github/workflows/catalog-validate.yml`
 - [ ] `.github/PULL_REQUEST_TEMPLATE.md`
 - [ ] `.github/CODEOWNERS`
@@ -213,4 +212,5 @@ acceptance criteria.
 - [x] 2026-09-25: inference-server/tests/ ï¿½ 53 pytest tests (schemas, preprocessing, mock models, endpoints) covering all 17 test cases.
 
 - [x] 2026-09-26: \pp/src/scan/\ ï¿½ Scan screen with 5-state machine (PERMISSIONS_REQUIRED ? CAMERA_ACTIVE ? ANALYZING ? RESULT_REVIEW / ERROR_RETRY), camera/gallery capture, concurrent inference API calls, confidence evaluation (threshold 0.60), terminology-compliant UI, profile store hydration. 26 tests pass. Design doc at \docs/design/screens/scan.md\.
-- [x] 2026-09-26: \pp/src/home/\ + \pp/(tabs)/\ — Home screen dashboard (ProfileSummaryCard, QuickActionsBar, RecentChecksSection) with root tab navigation (Home, Scan, Search, Profile). Expo Router (tabs) layout, Ionicons, theme-driven styling. 31 tests pass. Design doc at \docs/design/screens/home.md\.
+- [x] 2026-09-26: \pp/src/home/\ + \pp/(tabs)/\ ï¿½ Home screen dashboard (ProfileSummaryCard, QuickActionsBar, RecentChecksSection) with root tab navigation (Home, Scan, Search, Profile). Expo Router (tabs) layout, Ionicons, theme-driven styling. 31 tests pass. Design doc at \docs/design/screens/home.md\.
+- [x] 2026-09-26: \.github/workflows/ci.yml\ — Unified CI/CD pipeline with parallel jobs: mobile-test (Node 20, typecheck + lint + Jest) and inference-test (Python 3.11, pytest). Concurrency cancellation, npm/pip caching, working-directory isolation. 62+ tests pass across both stacks.
