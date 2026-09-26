@@ -34,5 +34,6 @@ team — so that every line of code can be explained and defended.
 | 14 | 14-ci-cd-pipeline.md | GitHub Actions CI/CD pipeline with parallel jobs | 2026-09-26 |
 | 15 | 15-production-deployment-scaffolding.md | Docker multi-stage build & EAS build profiles | 2026-09-26 |
 | 16 | 16-security-and-privacy-hardening.md | Rate limiting, privacy headers, CORS lockdown | 2026-09-26 |
+| 17 | 17-fastapi-analyze-endpoint.md | FastAPI /analyze endpoint & Supabase integration | 2026-09-26 |
 
 The agent adds one row per task.

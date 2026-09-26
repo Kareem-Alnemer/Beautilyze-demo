@@ -127,6 +127,7 @@ acceptance criteria.
 - [x] `supabase/migrations/001_types_and_tables.sql`
 - [x] `supabase/migrations/002_rls_policies.sql`
 - [x] `supabase/migrations/003_indexes.sql`
+- [x] `supabase/migrations/004_scans_table.sql`
 
 ---
 
@@ -218,3 +219,4 @@ acceptance criteria.
 - [x] 2026-09-26: \.github/workflows/ci.yml\ � Unified CI/CD pipeline with parallel jobs: mobile-test (Node 20, typecheck + lint + Jest) and inference-test (Python 3.11, pytest). Concurrency cancellation, npm/pip caching, working-directory isolation. 62+ tests pass across both stacks.
 - [x] 2026-09-26: \inference-server/Dockerfile\ + \.dockerignore\ + \docker-compose.yml\ + \pp/eas.json\ � Production deployment scaffolding: multi-stage Dockerfile (python:3.11-slim, non-root user, uvicorn workers, healthcheck), .dockerignore, root compose (port 8000), EAS profiles (development/preview/production). Learning doc at \docs/learning/15-production-deployment-scaffolding.md\.
 - [x] 2026-09-26: \inference-server/inference_server/main.py\ + \config.py\ + \tests/test_privacy.py\ � Security & privacy hardening per blueprint §8.1, §8.4. Rate limiting (10 req/min shared across /predict/* via application_limits + custom key function), privacy headers (Cache-Control: no-store, Pragma: no-cache on all /predict/* responses), CORS lockdown (explicit origins in production, wildcard in dev), health endpoint exempt. 15 new tests, all 68 tests pass. Learning doc at \docs/learning/16-security-and-privacy-hardening.md\.
+- [x] 2026-09-26: \inference-server/inference_server/main.py\ + \schemas/prediction.py\ + \utils/supabase_client.py\ + \models/pytorch_inference.py\ + \config.py\ + \supabase/migrations/004_scans_table.sql\ + \scripts/test_api.py\ � FastAPI /analyze endpoint per blueprint §8.1, §8.3, §9.1. Combined skin type + acne severity analysis in single POST, optional user_id from Bearer token, Supabase scans table insert with RLS, graceful degradation to "partial" status if DB unavailable. PyTorch models loaded lazily from checkpoints with dynamic class loading. Test script with synthetic image fallback. All 68 tests pass. Learning doc at \docs/learning/17-fastapi-analyze-endpoint.md\.

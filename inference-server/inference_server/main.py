@@ -4,19 +4,21 @@ Endpoints:
 - GET /health: Health check
 - POST /predict/skin-type: Predict skin type from image
 - POST /predict/acne-severity: Predict acne severity from image
+- POST /analyze: Combined analysis with Supabase storage
 """
 import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, File, UploadFile, HTTPException, status, Request, Response
+from fastapi import FastAPI, File, UploadFile, HTTPException, status, Request, Response, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
+from typing import Optional
 
 from inference_server.config import settings
-from inference_server.schemas.prediction import PredictResponse, HealthResponse
+from inference_server.schemas.prediction import PredictResponse, HealthResponse, AnalyzeResponse
 from inference_server.preprocessing.image import (
     validate_image_content_type,
     validate_image_size,
@@ -27,7 +29,9 @@ from inference_server.preprocessing.image import (
 )
 from inference_server.models.skin_type import predict_skin_type
 from inference_server.models.acne_severity import predict_acne_severity
+from inference_server.models.pytorch_inference import run_inference
 from inference_server.utils.privacy import ImageDataContext
+from inference_server.utils.supabase_client import insert_scan_result, get_supabase_client
 
 # Configure logging
 logging.basicConfig(level=settings.log_level)
@@ -209,6 +213,100 @@ async def validation_exception_handler(request, exc: ImageValidationError):
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
         content={"detail": str(exc)},
+    )
+
+
+@app.post(
+    "/analyze",
+    response_model=AnalyzeResponse,
+    responses={
+        400: {"description": "Invalid image format or content"},
+        413: {"description": "File too large"},
+        429: {"description": "Rate limit exceeded"},
+        500: {"description": "Analysis failed"},
+    },
+)
+async def analyze_endpoint(
+    request: Request,
+    file: UploadFile = File(...),
+    authorization: Optional[str] = Header(None),
+) -> AnalyzeResponse:
+    """
+    Analyze image for skin type and acne severity, store result in Supabase.
+    
+    Accepts an image file upload, runs both predictions, optionally extracts
+    user ID from Supabase Authorization Bearer token, and stores the result.
+    
+    Returns combined analysis with database record status.
+    """
+    # Validate content type
+    try:
+        validate_image_content_type(file.content_type or "")
+    except ImageValidationError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+    # Read file bytes
+    image_bytes = await file.read()
+    
+    # Validate file size
+    try:
+        validate_image_size(len(image_bytes))
+    except ImageValidationError as e:
+        raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail=str(e))
+
+    # Extract user ID from Authorization header if present
+    user_id = None
+    if authorization and authorization.startswith("Bearer "):
+        token = authorization[7:]  # Remove "Bearer "
+        # Try to get user from Supabase
+        client = get_supabase_client()
+        if client:
+            try:
+                user_response = client.auth.get_user(token)
+                if user_response.user:
+                    user_id = user_response.user.id
+            except Exception:
+                # Invalid token, proceed without user_id
+                pass
+
+    # Run inference using PyTorch models
+    try:
+        with ImageDataContext(image_bytes) as img_bytes:
+            # Preprocess
+            input_tensor = preprocess_image_bytes(img_bytes)
+            
+            # Run both predictions
+            result = run_inference(image_bytes)
+    except Exception as e:
+        logger.error(f"Analysis failed: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Analysis failed")
+
+    skin_type_label = result["skin_type"]["label"]
+    skin_type_confidence = result["skin_type"]["confidence"]
+    acne_label = result["acne_severity"]["label"]
+    acne_confidence = result["acne_severity"]["confidence"]
+
+    logger.info(f"Analysis: skin_type={skin_type_label} ({skin_type_confidence}), acne_severity={acne_label} ({acne_confidence})")
+
+    # Insert into Supabase
+    db_record = insert_scan_result(
+        skin_type=skin_type_label,
+        skin_confidence=skin_type_confidence,
+        acne_severity=acne_label,
+        acne_confidence=acne_confidence,
+        user_id=user_id,
+    )
+
+    # Determine response status
+    response_status = "success" if db_record else "partial"
+
+    return AnalyzeResponse(
+        status=response_status,
+        data={
+            "skin_type": {"label": skin_type_label, "confidence": skin_type_confidence},
+            "acne_severity": {"label": acne_label, "confidence": acne_confidence},
+        },
+        db_record=db_record,
     )
 
 

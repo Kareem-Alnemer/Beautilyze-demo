@@ -2,7 +2,7 @@
 Pydantic schemas for prediction API requests and responses.
 Per blueprint §5.2 AI Output Contract.
 """
-from typing import Literal
+from typing import Literal, Optional
 from pydantic import BaseModel, Field, ConfigDict
 from fastapi import UploadFile
 
@@ -49,6 +49,26 @@ class HealthResponse(BaseModel):
     status: Literal["ok"] = "ok"
     model_mode: str
     model_version: str
+
+
+class AnalyzeResponse(BaseModel):
+    """Combined analysis response with database status."""
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "status": "success",
+                "data": {
+                    "skin_type": {"label": "oily", "confidence": 0.73},
+                    "acne_severity": {"label": "mild", "confidence": 0.85}
+                },
+                "db_record": {"id": "uuid", "created_at": "2024-01-01T00:00:00Z"}
+            }
+        }
+    )
+
+    status: Literal["success", "partial"] = "success"
+    data: dict
+    db_record: Optional[dict] = None
 
 
 # Request validation is handled by FastAPI's UploadFile
