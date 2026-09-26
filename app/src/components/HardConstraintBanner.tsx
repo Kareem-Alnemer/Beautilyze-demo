@@ -41,8 +41,8 @@ export const HardConstraintBanner: React.FC<HardConstraintBannerProps> = ({
     <View style={styles.container}>
       <Text style={styles.heading}>Hard constraints</Text>
       <View style={styles.divider} />
-      {flagged.map((hc) => (
-        <View key={hc.name} style={styles.row}>
+      {flagged.map((hc, index) => (
+        <View key={`${hc.name}-${index}`} style={styles.row}>
           <View style={styles.iconContainer}>
             <Text style={[styles.icon, { color: resultColors[hc.result] }]}>
               {hc.result === 'pass' ? '✓' : hc.result === 'caution' ? '⚠' : '✕'}
@@ -63,51 +63,53 @@ export const HardConstraintBanner: React.FC<HardConstraintBannerProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
     backgroundColor: theme.colors.surface.base,
-    borderTopWidth: 1,
     borderBottomWidth: 1,
     borderColor: theme.colors.surface.rule,
+    borderTopWidth: 1,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
+    width: '100%',
+  },
+  content: {
+    flex: 1,
+  },
+  divider: {
+    backgroundColor: theme.colors.surface.rule,
+    height: 1,
+    marginBottom: theme.spacing.sm,
   },
   heading: {
+    color: theme.colors.text.secondary,
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.xs,
     fontWeight: theme.typography.weight.medium,
-    color: theme.colors.text.secondary,
     letterSpacing: 0.08 * theme.typography.size.xs,
+    marginBottom: theme.spacing.sm,
     textTransform: 'uppercase',
-    marginBottom: theme.spacing.sm,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: theme.colors.surface.rule,
-    marginBottom: theme.spacing.sm,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: theme.spacing.sm,
-  },
-  iconContainer: {
-    width: 24,
-    alignItems: 'center',
-    marginRight: theme.spacing.sm,
   },
   icon: {
     fontSize: theme.typography.size.md,
     fontWeight: theme.typography.weight.semibold,
   },
-  content: {
-    flex: 1,
+  iconContainer: {
+    alignItems: 'center',
+    marginRight: theme.spacing.sm,
+    width: 24,
   },
   name: {
+    color: theme.colors.text.primary,
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.md,
     fontWeight: theme.typography.weight.medium,
-    color: theme.colors.text.primary,
     marginBottom: 2,
+  },
+  reason: {
+    color: theme.colors.text.secondary,
+    fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.sm,
+    fontWeight: theme.typography.weight.regular,
+    lineHeight: theme.typography.lineHeight.normal * theme.typography.size.sm,
   },
   result: {
     fontFamily: theme.typography.font.body,
@@ -115,11 +117,9 @@ const styles = StyleSheet.create({
     fontWeight: theme.typography.weight.regular,
     marginBottom: 2,
   },
-  reason: {
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.sm,
-    fontWeight: theme.typography.weight.regular,
-    color: theme.colors.text.secondary,
-    lineHeight: theme.typography.lineHeight.normal * theme.typography.size.sm,
+  row: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    marginBottom: theme.spacing.sm,
   },
 });

@@ -37,12 +37,15 @@ def valid_png_bytes() -> bytes:
 @pytest.fixture
 def oversized_bytes() -> bytes:
     """Generate an oversized image (>5MB)."""
-    # Create a large image that will exceed 5MB when saved as JPEG
-    img = Image.new("RGB", (3000, 3000), color="green")
+    # Solid-color JPEGs compress too well; use random noise so the file
+    # genuinely exceeds the limit instead of asserting on a small file.
+    import os
+    img = Image.effect_noise((1500, 1500), 128).convert("RGB")
     buf = io.BytesIO()
     img.save(buf, format="JPEG", quality=95)
     data = buf.getvalue()
-    # Ensure it's actually over 5MB
+    if len(data) <= 5 * 1024 * 1024:
+        data = data + os.urandom(5 * 1024 * 1024 - len(data) + 1024)
     assert len(data) > 5 * 1024 * 1024
     return data
 

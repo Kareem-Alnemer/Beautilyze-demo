@@ -130,7 +130,7 @@ export function normalizeIngredients(
 
   const unmatchedCount = unmatched.length;
   const totalCount = normalized.length;
-  const partialData = totalCount > 0 && unmatchedCount / totalCount > 0.3;
+  const partialData = totalCount === 0 || unmatchedCount / totalCount > 0.3;
 
   return {
     ingredients_normalized: normalized,

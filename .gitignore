@@ -53,3 +53,5 @@ supabase/.branches/
 *.sqlite
 *.sqlite3
 tmp/
+# Local verification dependencies (never application source).
+.test-deps/

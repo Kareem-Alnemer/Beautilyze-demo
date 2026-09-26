@@ -28,7 +28,7 @@ interface ScanResultViewProps {
     actionLabel: 'Looks right' | 'Accept';
     noticeText?: string;
   };
-  onAccept: () => void;
+  onAccept: (field: 'skinType' | 'acneSeverity') => void;
   onRetake: () => void;
   onSetManually: () => void;
 }
@@ -107,7 +107,7 @@ export const ScanResultView: React.FC<ScanResultViewProps> = ({
               styles.actionButton,
               evaluation.isHighConfidence ? styles.actionButtonPrimary : styles.actionButtonSecondary,
             ]}
-            onPress={onAccept}
+            onPress={() => onAccept(title === 'Skin Type' ? 'skinType' : 'acneSeverity')}
             accessibilityLabel={`${evaluation.actionLabel} for ${title.toLowerCase()}`}
           >
             <Text style={styles.actionButtonText}>{evaluation.actionLabel}</Text>
@@ -175,190 +175,190 @@ export const ScanResultView: React.FC<ScanResultViewProps> = ({
 };
 
 const styles = StyleSheet.create({
-  scrollContent: {
-    padding: theme.spacing.lg,
-    paddingBottom: theme.spacing.xxxl,
-  },
-  imagePreview: {
-    width: '100%',
-    height: 200,
-    borderRadius: theme.radii.md,
-    overflow: 'hidden',
-    marginBottom: theme.spacing.xl,
-    backgroundColor: theme.colors.surface.rule,
-  },
-  previewImage: {
-    width: '100%',
-    height: '100%',
-  },
-  imageOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: theme.spacing.md,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  imageOverlayText: {
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.md,
-    color: theme.colors.text.onAccent,
-    textAlign: 'center',
-  },
-  predictionCard: {
-    backgroundColor: theme.colors.surface.raised,
-    borderRadius: theme.radii.md,
-    padding: theme.spacing.lg,
-    marginBottom: theme.spacing.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.surface.rule,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: theme.spacing.md,
-  },
-  cardTitle: {
-    fontFamily: theme.typography.font.heading,
-    fontSize: theme.typography.size.lg,
-    fontWeight: theme.typography.weight.semibold,
-    color: theme.colors.text.primary,
-  },
-  iconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: theme.colors.surface.rule,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  icon: {
-    fontSize: 16,
-  },
-  predictionRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: theme.spacing.md,
-  },
-  labelContainer: {
-    flex: 1,
-  },
-  predictionLabel: {
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.xs,
-    fontWeight: theme.typography.weight.medium,
-    color: theme.colors.text.tertiary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 2,
-  },
-  predictionValue: {
-    fontFamily: theme.typography.font.heading,
-    fontSize: theme.typography.size.lg,
-    fontWeight: theme.typography.weight.semibold,
-  },
-  confidenceContainer: {
-    alignItems: 'flex-end',
-  },
-  confidenceLabel: {
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.xs,
-    fontWeight: theme.typography.weight.medium,
-    color: theme.colors.text.tertiary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 2,
-  },
-  confidenceValue: {
-    fontFamily: theme.typography.font.heading,
-    fontSize: theme.typography.size.lg,
-    fontWeight: theme.typography.weight.semibold,
-  },
-  confidenceBarContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.sm,
-  },
-  confidenceBarBackground: {
-    flex: 1,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: theme.colors.surface.rule,
-    overflow: 'hidden',
-  },
-  confidenceBarFill: {
-    height: '100%',
-    borderRadius: 4,
-  },
-  confidencePercent: {
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.sm,
-    fontWeight: theme.typography.weight.medium,
-    color: theme.colors.text.secondary,
-    minWidth: 50,
-    textAlign: 'right',
-  },
-  noticeText: {
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.sm,
-    color: theme.colors.verdict.caution,
-    marginTop: theme.spacing.sm,
-    fontStyle: 'italic',
-  },
-  actionRow: {
-    flexDirection: 'row',
-    gap: theme.spacing.sm,
-    marginTop: theme.spacing.md,
-  },
   actionButton: {
-    flex: 1,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.radii.md,
     alignItems: 'center',
+    borderRadius: theme.radii.md,
+    flex: 1,
     justifyContent: 'center',
+    paddingVertical: theme.spacing.md,
   },
   actionButtonPrimary: {
     backgroundColor: theme.colors.brand.accent,
   },
   actionButtonSecondary: {
     backgroundColor: theme.colors.surface.raised,
-    borderWidth: 1,
     borderColor: theme.colors.surface.rule,
+    borderWidth: 1,
   },
   actionButtonText: {
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.md,
     fontWeight: theme.typography.weight.semibold,
   },
-  modelInfo: {
-    marginTop: theme.spacing.xl,
-    padding: theme.spacing.md,
-    backgroundColor: theme.colors.surface.base,
-    borderRadius: theme.radii.md,
-    borderWidth: 1,
-    borderColor: theme.colors.surface.rule,
+  actionRow: {
+    flexDirection: 'row',
+    gap: theme.spacing.sm,
+    marginTop: theme.spacing.md,
   },
-  modelInfoText: {
+  cardHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing.md,
+  },
+  cardTitle: {
+    color: theme.colors.text.primary,
+    fontFamily: theme.typography.font.heading,
+    fontSize: theme.typography.size.lg,
+    fontWeight: theme.typography.weight.semibold,
+  },
+  confidenceBarBackground: {
+    backgroundColor: theme.colors.surface.rule,
+    borderRadius: 4,
+    flex: 1,
+    height: 8,
+    overflow: 'hidden',
+  },
+  confidenceBarContainer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: theme.spacing.sm,
+    marginBottom: theme.spacing.sm,
+  },
+  confidenceBarFill: {
+    borderRadius: 4,
+    height: '100%',
+  },
+  confidenceContainer: {
+    alignItems: 'flex-end',
+  },
+  confidenceLabel: {
+    color: theme.colors.text.tertiary,
+    fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.xs,
+    fontWeight: theme.typography.weight.medium,
+    letterSpacing: 0.5,
+    marginBottom: 2,
+    textTransform: 'uppercase',
+  },
+  confidencePercent: {
+    color: theme.colors.text.secondary,
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.sm,
+    fontWeight: theme.typography.weight.medium,
+    minWidth: 50,
+    textAlign: 'right',
+  },
+  confidenceValue: {
+    fontFamily: theme.typography.font.heading,
+    fontSize: theme.typography.size.lg,
+    fontWeight: theme.typography.weight.semibold,
+  },
+  icon: {
+    fontSize: 16,
+  },
+  iconContainer: {
+    alignItems: 'center',
+    backgroundColor: theme.colors.surface.rule,
+    borderRadius: 16,
+    height: 32,
+    justifyContent: 'center',
+    width: 32,
+  },
+  imageOverlay: {
+    backgroundColor: theme.colors.surface.scrim,
+    bottom: 0,
+    left: 0,
+    padding: theme.spacing.md,
+    position: 'absolute',
+    right: 0,
+  },
+  imageOverlayText: {
+    color: theme.colors.text.onAccent,
+    fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.md,
+    textAlign: 'center',
+  },
+  imagePreview: {
+    backgroundColor: theme.colors.surface.rule,
+    borderRadius: theme.radii.md,
+    height: 200,
+    marginBottom: theme.spacing.xl,
+    overflow: 'hidden',
+    width: '100%',
+  },
+  labelContainer: {
+    flex: 1,
+  },
+  modelInfo: {
+    backgroundColor: theme.colors.surface.base,
+    borderColor: theme.colors.surface.rule,
+    borderRadius: theme.radii.md,
+    borderWidth: 1,
+    marginTop: theme.spacing.xl,
+    padding: theme.spacing.md,
+  },
+  modelInfoText: {
     color: theme.colors.text.tertiary,
+    fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.sm,
     marginBottom: 2,
   },
+  noticeText: {
+    color: theme.colors.verdict.caution,
+    fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.sm,
+    fontStyle: 'italic',
+    marginTop: theme.spacing.sm,
+  },
+  predictionCard: {
+    backgroundColor: theme.colors.surface.raised,
+    borderColor: theme.colors.surface.rule,
+    borderRadius: theme.radii.md,
+    borderWidth: 1,
+    marginBottom: theme.spacing.lg,
+    padding: theme.spacing.lg,
+  },
+  predictionLabel: {
+    color: theme.colors.text.tertiary,
+    fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.xs,
+    fontWeight: theme.typography.weight.medium,
+    letterSpacing: 0.5,
+    marginBottom: 2,
+    textTransform: 'uppercase',
+  },
+  predictionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing.md,
+  },
+  predictionValue: {
+    fontFamily: theme.typography.font.heading,
+    fontSize: theme.typography.size.lg,
+    fontWeight: theme.typography.weight.semibold,
+  },
+  previewImage: {
+    height: '100%',
+    width: '100%',
+  },
   retakeButton: {
+    alignItems: 'center',
+    backgroundColor: theme.colors.surface.raised,
+    borderColor: theme.colors.surface.rule,
+    borderRadius: theme.radii.md,
+    borderWidth: 1,
     marginTop: theme.spacing.xl,
     paddingVertical: theme.spacing.md,
-    borderRadius: theme.radii.md,
-    backgroundColor: theme.colors.surface.raised,
-    borderWidth: 1,
-    borderColor: theme.colors.surface.rule,
-    alignItems: 'center',
   },
   retakeButtonText: {
+    color: theme.colors.text.primary,
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.md,
     fontWeight: theme.typography.weight.medium,
-    color: theme.colors.text.primary,
+  },
+  scrollContent: {
+    padding: theme.spacing.lg,
+    paddingBottom: theme.spacing.xxxl,
   },
 });

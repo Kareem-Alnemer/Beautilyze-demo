@@ -38,26 +38,26 @@ export const VerdictBadge: React.FC<VerdictBadgeProps> = ({ verdict, summary }) 
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
-    paddingVertical: theme.spacing.xl,
-    paddingHorizontal: theme.spacing.lg,
     backgroundColor: theme.colors.surface.base,
-    borderWidth: 2,
     borderRadius: theme.radii.none,
-  },
-  verdictWord: {
-    fontFamily: theme.typography.font.heading,
-    fontSize: theme.typography.size.xxl,
-    fontWeight: theme.typography.weight.semibold,
-    textAlign: 'center',
-    marginBottom: theme.spacing.sm,
-    lineHeight: theme.typography.lineHeight.tight * theme.typography.size.xxl,
+    borderWidth: 2,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.xl,
+    width: '100%',
   },
   summary: {
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.lg,
     fontWeight: theme.typography.weight.regular,
-    textAlign: 'center',
     lineHeight: theme.typography.lineHeight.normal * theme.typography.size.lg,
+    textAlign: 'center',
+  },
+  verdictWord: {
+    fontFamily: theme.typography.font.heading,
+    fontSize: theme.typography.size.xxl,
+    fontWeight: theme.typography.weight.semibold,
+    lineHeight: theme.typography.lineHeight.tight * theme.typography.size.xxl,
+    marginBottom: theme.spacing.sm,
+    textAlign: 'center',
   },
 });

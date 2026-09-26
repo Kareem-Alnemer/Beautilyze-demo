@@ -15,10 +15,11 @@ WORKDIR /app
 # Copy requirements first for better caching
 COPY inference-server/pyproject.toml inference-server/pyproject.toml
 COPY inference-server/README.md inference-server/README.md
+COPY inference-server/inference_server inference-server/inference_server
 
 # Install Python dependencies
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -e inference-server[pytorch]
+    pip install --no-cache-dir ./inference-server[pytorch]
 
 # ===== Runtime Stage =====
 FROM python:3.11-slim AS runtime

@@ -52,7 +52,9 @@ function generateReason(
         const matchedAllergen = profile.allergies.find((a) =>
           product.ingredients_normalized.includes(a.toLowerCase().trim())
         );
-        return `Contains ${matchedAllergen}, which you flagged as an allergy.`;
+        return matchedAllergen
+          ? `Contains ${matchedAllergen}, which you flagged as an allergy.`
+          : 'Contains an ingredient matching a declared allergen through the ingredient alias lookup.';
       }
       return 'No allergen conflicts identified in available ingredient data.';
     }
@@ -179,7 +181,7 @@ export function evaluate(
   ingredientConcerns: IngredientConcern[] = []
 ): Verdict {
   // Run all five factors
-  const allergenState = evaluateDeclaredAllergenConflict(profile, product);
+  const allergenState = evaluateDeclaredAllergenConflict(profile, product, ingredientConcerns);
   const sensitivityState = evaluateSensitivity(profile, product, ingredientConcerns);
   const skinTypeFitState = evaluateSkinTypeFit(profile, product);
   const acneFitState = evaluateAcneFit(profile, product, ingredientConcerns);

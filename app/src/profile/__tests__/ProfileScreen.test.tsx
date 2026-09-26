@@ -21,7 +21,10 @@ const mockStoreState = {
 };
 
 jest.mock('../store', () => {
-  const mockUseProfileStore = jest.fn((selector) => selector(mockStoreState));
+  const mockUseProfileStore = jest.fn((selector) => selector(mockStoreState)) as unknown as {
+    (...args: unknown[]): unknown;
+    getState: jest.Mock;
+  };
   mockUseProfileStore.getState = jest.fn(() => mockStoreState);
   
   return {
@@ -46,7 +49,7 @@ jest.mock('../store', () => {
 jest.mock('../components/SkinTypeSelector', () => {
   const React = require('react');
   return {
-    SkinTypeSelector: ({ value, onChange, label, disabled }) =>
+    SkinTypeSelector: ({ value, onChange, label, disabled }: Record<string, any>) =>
       React.createElement('View', { testID: "skin-type-selector", accessibilityLabel: label },
         React.createElement('Text', { testID: "skin-type-label" }, label),
         React.createElement('Text', null, `${label}: ${value || 'Not set'}`),
@@ -66,7 +69,7 @@ jest.mock('../components/SkinTypeSelector', () => {
 jest.mock('../components/AcneSeveritySelector', () => {
   const React = require('react');
   return {
-    AcneSeveritySelector: ({ value, onChange, label, disabled }) =>
+    AcneSeveritySelector: ({ value, onChange, label, disabled }: Record<string, any>) =>
       React.createElement('View', { testID: "acne-severity-selector", accessibilityLabel: label },
         React.createElement('Text', { testID: "acne-severity-label" }, label),
         React.createElement('Text', null, `${label}: ${value || 'Not set'}`),
@@ -86,13 +89,13 @@ jest.mock('../components/AcneSeveritySelector', () => {
 jest.mock('../components/AgeInput', () => {
   const React = require('react');
   return {
-    AgeInput: ({ value, onChange, label, disabled }) =>
+    AgeInput: ({ value, onChange, label, disabled }: Record<string, any>) =>
       React.createElement('View', { testID: "age-input", accessibilityLabel: label },
         React.createElement('Text', null, `${label}: ${value || 'Not set'}`),
         React.createElement('TextInput', {
           testID: "age-text-input",
           value: value?.toString() || '',
-          onChangeText: (text) => onChange(text ? parseInt(text, 10) : null),
+          onChangeText: (text: string) => onChange(text ? parseInt(text, 10) : null),
           disabled: disabled,
         })
       ),
@@ -102,14 +105,14 @@ jest.mock('../components/AgeInput', () => {
 jest.mock('../components/AllergyManager', () => {
   const React = require('react');
   return {
-    AllergyManager: ({ items, onAdd, onRemove, disabled }) =>
+    AllergyManager: ({ items, onAdd, onRemove, disabled }: Record<string, any>) =>
       React.createElement('View', { testID: "allergy-manager" },
         React.createElement('Text', { testID: "allergies-label" }, "Allergies"),
         React.createElement('Text', null, `Allergies: ${items.join(', ') || 'None'}`),
         React.createElement('TouchableOpacity', { onPress: () => onAdd('peanut'), testID: "add-allergy" },
           React.createElement('Text', null, "Add Peanut")
         ),
-        items.map((item) => (
+        items.map((item: string) => (
           React.createElement('TouchableOpacity', { key: item, onPress: () => onRemove(item), testID: `remove-allergy-${item}` },
             React.createElement('Text', null, `Remove ${item}`)
           )
@@ -121,14 +124,14 @@ jest.mock('../components/AllergyManager', () => {
 jest.mock('../components/SensitivityManager', () => {
   const React = require('react');
   return {
-    SensitivityManager: ({ items, onAdd, onRemove, disabled }) =>
+    SensitivityManager: ({ items, onAdd, onRemove, disabled }: Record<string, any>) =>
       React.createElement('View', { testID: "sensitivity-manager" },
         React.createElement('Text', { testID: "sensitivities-label" }, "Sensitivities"),
         React.createElement('Text', null, `Sensitivities: ${items.join(', ') || 'None'}`),
         React.createElement('TouchableOpacity', { onPress: () => onAdd('fragrance'), testID: "add-sensitivity" },
           React.createElement('Text', null, "Add Fragrance")
         ),
-        items.map((item) => (
+        items.map((item: string) => (
           React.createElement('TouchableOpacity', { key: item, onPress: () => onRemove(item), testID: `remove-sensitivity-${item}` },
             React.createElement('Text', null, `Remove ${item}`)
           )
@@ -140,7 +143,7 @@ jest.mock('../components/SensitivityManager', () => {
 jest.mock('../components/AIOverrideBanner', () => {
   const React = require('react');
   return {
-    AIOverrideBanner: ({ field, aiValue, confidence, userValue, onAccept, onChange, modelVersion }) => {
+    AIOverrideBanner: ({ field, aiValue, confidence, userValue, onAccept, onChange, modelVersion }: Record<string, any>) => {
       if (!aiValue) return null;
       const isHighConfidence = confidence !== null && confidence >= 0.60;
       return React.createElement('View', { testID: `ai-banner-${field}`, accessibilityLabel: `AI banner for ${field}` },
@@ -188,7 +191,7 @@ describe('ProfileScreen', () => {
     jest.clearAllMocks();
     // Update the mock store state
     Object.assign(mockStoreState, mockStore);
-    (useProfileStore as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
+    (useProfileStore as unknown as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
   });
 
   it('renders all sections', () => {
@@ -213,7 +216,7 @@ describe('ProfileScreen', () => {
       model_version: 'test-model-v1',
     };
     Object.assign(mockStoreState, storeWithAI);
-    (useProfileStore as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
+    (useProfileStore as unknown as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
 
     const { getByTestId } = render(React.createElement(ProfileScreen));
 
@@ -223,7 +226,7 @@ describe('ProfileScreen', () => {
 
   it('does not render AI banner when no AI data', () => {
     Object.assign(mockStoreState, mockStore);
-    (useProfileStore as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
+    (useProfileStore as unknown as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
 
     const { queryByTestId } = render(React.createElement(ProfileScreen));
 
@@ -238,7 +241,7 @@ describe('ProfileScreen', () => {
       skin_type_confidence: 0.75,
     };
     Object.assign(mockStoreState, storeWithHighConfidence);
-    (useProfileStore as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
+    (useProfileStore as unknown as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
 
     const { getByTestId } = render(React.createElement(ProfileScreen));
 
@@ -252,7 +255,7 @@ describe('ProfileScreen', () => {
       skin_type_confidence: 0.45,
     };
     Object.assign(mockStoreState, storeWithLowConfidence);
-    (useProfileStore as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
+    (useProfileStore as unknown as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
 
     const { queryByTestId } = render(React.createElement(ProfileScreen));
 
@@ -266,7 +269,7 @@ describe('ProfileScreen', () => {
       skin_type_confidence: 0.45,
     };
     Object.assign(mockStoreState, storeWithLowConfidence);
-    (useProfileStore as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
+    (useProfileStore as unknown as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
 
     const { getByText } = render(React.createElement(ProfileScreen));
 
@@ -275,7 +278,7 @@ describe('ProfileScreen', () => {
 
   it('calls setUserSkinType when skin type selector changes', () => {
     Object.assign(mockStoreState, mockStore);
-    (useProfileStore as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
+    (useProfileStore as unknown as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
     const { getByTestId } = render(React.createElement(ProfileScreen));
 
     fireEvent.press(getByTestId('skin-type-oily'));
@@ -285,7 +288,7 @@ describe('ProfileScreen', () => {
 
   it('calls setUserAcneSeverity when acne severity selector changes', () => {
     Object.assign(mockStoreState, mockStore);
-    (useProfileStore as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
+    (useProfileStore as unknown as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
     const { getByTestId } = render(React.createElement(ProfileScreen));
 
     fireEvent.press(getByTestId('acne-moderate'));
@@ -295,7 +298,7 @@ describe('ProfileScreen', () => {
 
   it('calls setAge when age input changes', () => {
     Object.assign(mockStoreState, mockStore);
-    (useProfileStore as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
+    (useProfileStore as unknown as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
     const { getByTestId } = render(React.createElement(ProfileScreen));
 
     fireEvent.changeText(getByTestId('age-text-input'), '25');
@@ -305,7 +308,7 @@ describe('ProfileScreen', () => {
 
   it('calls addAllergy when adding allergy', () => {
     Object.assign(mockStoreState, mockStore);
-    (useProfileStore as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
+    (useProfileStore as unknown as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
     const { getByTestId } = render(React.createElement(ProfileScreen));
 
     fireEvent.press(getByTestId('add-allergy'));
@@ -319,7 +322,7 @@ describe('ProfileScreen', () => {
       allergies: ['peanut'],
     };
     Object.assign(mockStoreState, storeWithAllergy);
-    (useProfileStore as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
+    (useProfileStore as unknown as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
 
     const { getByTestId } = render(React.createElement(ProfileScreen));
 
@@ -330,7 +333,7 @@ describe('ProfileScreen', () => {
 
   it('calls addSensitivity when adding sensitivity', () => {
     Object.assign(mockStoreState, mockStore);
-    (useProfileStore as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
+    (useProfileStore as unknown as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
     const { getByTestId } = render(React.createElement(ProfileScreen));
 
     fireEvent.press(getByTestId('add-sensitivity'));
@@ -345,7 +348,7 @@ describe('ProfileScreen', () => {
       skin_type_confidence: 0.75,
     };
     Object.assign(mockStoreState, storeWithAI);
-    (useProfileStore as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
+    (useProfileStore as unknown as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
 
     const { getByTestId } = render(React.createElement(ProfileScreen));
 
@@ -356,7 +359,7 @@ describe('ProfileScreen', () => {
 
   it('calls persistToSupabase when save button pressed', async () => {
     Object.assign(mockStoreState, mockStore);
-    (useProfileStore as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
+    (useProfileStore as unknown as jest.Mock).mockImplementation((selector) => selector(mockStoreState));
     const { getByText } = render(React.createElement(ProfileScreen));
 
     fireEvent.press(getByText('Save Profile'));

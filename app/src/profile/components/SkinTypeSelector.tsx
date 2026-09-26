@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { SkinType } from '../../verdict/types';
-import { useTheme } from '../../theme';
+import { theme } from '../../theme';
 
 interface SkinTypeSelectorProps {
   value: SkinType | null;
@@ -22,36 +22,36 @@ export const SkinTypeSelector: React.FC<SkinTypeSelectorProps> = ({
   label = 'Skin Type',
   disabled = false,
 }) => {
-  const { colors, spacing, radii } = useTheme();
+  const { colors, spacing, radii } = theme;
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { color: colors.text }]}>{label}</Text>
+      <Text style={[styles.label, { color: colors.text.primary }]}>{label}</Text>
       <View style={styles.options}>
-        {SKIN_TYPES.map(({ value, label, description }) => (
+        {SKIN_TYPES.map(({ value: optionValue, label, description }) => (
           <TouchableOpacity
-            key={value}
-            onPress={() => !disabled && onChange(value)}
+            key={optionValue}
+            onPress={() => !disabled && onChange(optionValue)}
             disabled={disabled}
             style={[
               styles.option,
-              value === value && styles.optionSelected,
+              value === optionValue && styles.optionSelected,
               disabled && styles.optionDisabled,
             ]}
             accessibilityRole="radio"
-            accessibilityState={{ checked: value === value }}
+            accessibilityState={{ checked: value === optionValue }}
             accessibilityLabel={`${label} skin type. ${description}`}
           >
             <Text style={[
               styles.optionLabel,
-              value === value ? styles.optionLabelSelected : styles.optionLabelDefault,
+              value === optionValue ? styles.optionLabelSelected : styles.optionLabelDefault,
               disabled && styles.optionLabelDisabled,
             ]}>
               {label}
             </Text>
             <Text style={[
               styles.optionDescription,
-              value === value ? styles.optionDescriptionSelected : styles.optionDescriptionDefault,
+              value === optionValue ? styles.optionDescriptionSelected : styles.optionDescriptionDefault,
             ]}>
               {description}
             </Text>
@@ -59,7 +59,7 @@ export const SkinTypeSelector: React.FC<SkinTypeSelectorProps> = ({
         ))}
       </View>
       {value && (
-        <Text style={[styles.currentValue, { color: colors.textSecondary }]}>
+        <Text style={[styles.currentValue, { color: colors.text.secondary }]}>
           Selected: {value.charAt(0).toUpperCase() + value.slice(1)}
         </Text>
       )}
@@ -69,59 +69,59 @@ export const SkinTypeSelector: React.FC<SkinTypeSelectorProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
+    marginBottom: theme.spacing.lg,
+  },
+  currentValue: {
+    fontSize: theme.typography.size.sm,
+    marginTop: theme.spacing.sm,
+    textAlign: 'center',
   },
   label: {
-    fontSize: 16,
+    fontSize: theme.typography.size.md,
     fontWeight: '600',
-    marginBottom: 12,
-  },
-  options: {
-    flexDirection: 'row',
-    gap: 12,
+    marginBottom: theme.spacing.md,
   },
   option: {
-    flex: 1,
-    padding: 16,
+    backgroundColor: theme.colors.surface.raised,
+    borderRadius: theme.radii.md,
     borderWidth: 2,
-    borderRadius: 12,
-    backgroundColor: '#fff',
+    flex: 1,
+    padding: theme.spacing.lg,
   },
-  optionSelected: {
-    borderColor: '#007AFF',
-    backgroundColor: '#E8F0FE',
+  optionDescription: {
+    fontSize: theme.typography.size.xs,
+    marginTop: theme.spacing.xs,
+    textAlign: 'center',
+  },
+  optionDescriptionDefault: {
+    color: theme.colors.text.secondary,
+  },
+  optionDescriptionSelected: {
+    color: theme.colors.brand.accent,
   },
   optionDisabled: {
     opacity: 0.5,
   },
   optionLabel: {
-    fontSize: 16,
+    fontSize: theme.typography.size.md,
     fontWeight: '600',
     textAlign: 'center',
   },
-  optionLabelSelected: {
-    color: '#007AFF',
-  },
   optionLabelDefault: {
-    color: '#1A1A1A',
+    color: theme.colors.text.primary,
   },
   optionLabelDisabled: {
-    color: '#999',
+    color: theme.colors.text.secondary,
   },
-  optionDescription: {
-    fontSize: 12,
-    textAlign: 'center',
-    marginTop: 4,
+  optionLabelSelected: {
+    color: theme.colors.brand.accent,
   },
-  optionDescriptionSelected: {
-    color: '#007AFF',
+  optionSelected: {
+    backgroundColor: theme.colors.surface.base,
+    borderColor: theme.colors.brand.accent,
   },
-  optionDescriptionDefault: {
-    color: '#666',
-  },
-  currentValue: {
-    marginTop: 8,
-    fontSize: 14,
-    textAlign: 'center',
+  options: {
+    flexDirection: 'row',
+    gap: theme.spacing.md,
   },
 });

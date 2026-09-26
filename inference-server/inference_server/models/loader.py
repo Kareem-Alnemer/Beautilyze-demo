@@ -3,6 +3,7 @@ Model loader factory.
 Supports mock, PyTorch, and ONNX model modes.
 """
 import numpy as np
+import hashlib
 from typing import Protocol, Optional
 from inference_server.config import settings
 
@@ -25,11 +26,12 @@ class MockModel:
         # Deterministic prediction based on input tensor hash
         # Use first few values to create pseudo-deterministic output
         tensor_bytes = input_tensor.tobytes()[:100]
-        hash_val = hash(tensor_bytes) % len(self.labels)
+        digest = int.from_bytes(hashlib.sha256(tensor_bytes).digest()[:8], "big")
+        hash_val = digest % len(self.labels)
         label = self.labels[hash_val]
         # Deterministic confidence based on tensor content
         # Use a hash of the tensor to generate consistent confidence
-        confidence_seed = hash(tensor_bytes) % 10000
+        confidence_seed = digest % 10000
         confidence_rng = np.random.RandomState(confidence_seed)
         confidence = 0.55 + (confidence_rng.random() * 0.4)
         return label, round(confidence, 2)
@@ -42,7 +44,17 @@ class PyTorchModel:
         import torch
         self.device = torch.device(device)
         self.labels = labels
-        self.model = torch.jit.load(model_path, map_location=self.device)
+        checkpoint = torch.load(model_path, map_location=self.device, weights_only=True)
+        if not isinstance(checkpoint, dict) or "model_state" not in checkpoint or "classes" not in checkpoint:
+            raise ValueError("Expected a checkpoint with model_state and classes")
+        if set(checkpoint["classes"]) != set(labels):
+            raise ValueError("Checkpoint labels do not match the blueprint classes")
+        from torchvision.models import mobilenet_v3_small
+        self.labels = checkpoint["classes"]
+        self.model = mobilenet_v3_small(weights=None)
+        self.model.classifier[3] = torch.nn.Linear(self.model.classifier[3].in_features, len(labels))
+        self.model.load_state_dict(checkpoint["model_state"])
+        self.model.to(self.device)
         self.model.eval()
     
     def predict(self, input_tensor: "np.ndarray") -> tuple[str, float]:

@@ -96,8 +96,8 @@ export interface UseScanReturn {
   requestCameraPermission: () => Promise<void>;
   takePhoto: () => Promise<void>;
   pickFromGallery: () => Promise<void>;
-  analyzePhoto: () => Promise<void>;
-  acceptAIInputs: () => void;
+  analyzePhoto: (uri?: string) => Promise<void>;
+  acceptAIInputs: (field: 'skinType' | 'acneSeverity') => void;
   retakePhoto: () => void;
   retryAnalysis: () => Promise<void>;
   dismissError: () => void;

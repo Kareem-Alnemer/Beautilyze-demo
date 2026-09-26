@@ -1,16 +1,17 @@
 import React from 'react';
 import { render, waitFor, fireEvent } from '@testing-library/react-native';
-import { useVerdict } from '../../verdict/hooks/useVerdict';
+import { useVerdict } from '../../catalog/useVerdict';
 
 // Mock getProduct
 jest.mock('../../catalog/api', () => ({
   getProduct: jest.fn(),
+  getIngredientConcerns: jest.fn().mockResolvedValue([]),
 }));
 
 import { getProduct } from '../../catalog/api';
 
 // Test component that uses the hook
-const TestComponent: React.FC<{ productId: string; profile: any }> = ({ productId, profile }) => {
+const TestComponent: React.FC<{ productId: string; profile: any }> = ({ productId, profile }: Record<string, any>) => {
   const { verdict, product, loading, error, refetch } = useVerdict(productId, profile);
   return React.createElement('View', { testID: 'test-component' },
     loading && React.createElement('Text', { testID: 'loading' }, 'Loading'),

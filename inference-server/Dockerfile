@@ -11,8 +11,10 @@ WORKDIR /app
 
 # Install Python dependencies
 COPY pyproject.toml ./
+COPY README.md ./
+COPY inference_server ./inference_server
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
-    && pip install --no-cache-dir -e ".[dev]"
+    && pip install --no-cache-dir ".[pytorch]"
 
 # Stage 2: Runtime - minimal image with non-root user
 FROM python:3.11-slim AS runtime
@@ -37,7 +39,7 @@ EXPOSE 8000
 
 # Healthcheck using the /health endpoint
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
 # Production uvicorn command with multiple workers
-CMD ["uvicorn", "inference_server.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+CMD ["uvicorn", "inference_server.main:app", "--host", "0.0.0.0", "--port", "8000"]

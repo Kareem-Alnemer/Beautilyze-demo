@@ -33,16 +33,21 @@ the same thing and must not be mixed.
 
 1. Read `docs/annotation-methodology.md`.
 2. Follow `.agents/playbooks/add-product.md`.
-3. Run `scripts/validate-catalog.ts` after every edit.
-4. Run `scripts/seed-catalog.ts` to regenerate `supabase/seed/*.sql`.
+3. Run `node scripts/validate-catalog.mjs` after every edit.
+4. Run `node scripts/seed-catalog.mjs` to regenerate `supabase/seed/*.sql`.
 5. Commit the CSV change and the regenerated SQL **together**.
 
 ## Definition of "verified" (blueprint §7.7)
 
 An ingredient list is verified when:
 - It has been retrieved from a named external source.
-- It has been through the normalization pipeline (`scripts/normalize-ingredients.ts`).
+- It has been through the normalization pipeline (`app/src/catalog/normalize.ts`, mirrored in `scripts/seed-catalog.mjs`).
 - Any tag assigned has a recorded source and rationale.
+
+Per-product deep-dives may live in `annotations/` (one Markdown file per
+product). The CSV columns `annotation_source` / `annotation_rationale` are
+the minimum evidence and must always be filled; `annotations/` files are
+optional supplements, never substitutes.
 
 ## What is NOT in this folder
 

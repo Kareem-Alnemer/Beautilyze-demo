@@ -43,11 +43,6 @@ class Settings(BaseSettings):
     rate_limit_predict: str = Field(default="10/minute", description="Rate limit for prediction endpoints")
     redis_url: Optional[str] = Field(default=None, description="Redis URL for rate limiting (production)")
 
-    # Supabase
-    supabase_url: Optional[str] = Field(default=None, description="Supabase project URL")
-    supabase_anon_key: Optional[str] = Field(default=None, description="Supabase anon key")
-    supabase_service_role_key: Optional[str] = Field(default=None, description="Supabase service role key")
-
     # Logging
     log_level: str = "INFO"
 

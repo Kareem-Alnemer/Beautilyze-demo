@@ -14,6 +14,8 @@ export const colors = {
     base: '#FBF7F2',
     raised: '#FFFFFF',
     rule: '#1F1B1810',
+    transparent: 'transparent',
+    scrim: 'rgba(0,0,0,0.5)',
   },
   verdict: {
     match: '#3D8B5F',

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { SkinType, AcneSeverity } from '../../verdict/types';
-import { useTheme } from '../../theme';
+import { theme } from '../../theme';
 
 interface AIOverrideBannerProps {
   field: 'skin_type' | 'acne_severity';
@@ -22,27 +22,27 @@ export const AIOverrideBanner: React.FC<AIOverrideBannerProps> = ({
   onChange,
   modelVersion,
 }) => {
-  const { colors, spacing, radii } = useTheme();
+  const { colors, spacing, radii } = theme;
 
   if (aiValue === null) return null;
 
   const isHighConfidence = confidence !== null && confidence >= 0.60;
   const label = field === 'skin_type' ? 'Skin Type' : 'Acne Severity';
-  const confidencePercent = confidence !== null ? Math.round(confidence * 100) : null;
+  const confidencePercent = confidence !== null ? confidence.toFixed(2) : null;
 
   return (
-    <View style={[styles.banner, { backgroundColor: colors.surface }]}>
+    <View style={[styles.banner, { backgroundColor: colors.surface.raised }]}>
       <View style={styles.header}>
         <View style={styles.iconWrapper}>
-          <Text style={styles.icon}>🤖</Text>
+          <Text style={styles.icon}></Text>
         </View>
         <View style={styles.headerText}>
-          <Text style={[styles.title, { color: colors.text }]}>
+          <Text style={[styles.title, { color: colors.text.primary }]}>
             AI Estimate: {label}
           </Text>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+          <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
             {confidencePercent !== null
-              ? `Model score: ${confidencePercent}%`
+              ? `Model score: ${confidencePercent}`
               : 'Confidence unavailable'}
             {modelVersion && ` • ${modelVersion}`}
           </Text>
@@ -51,19 +51,19 @@ export const AIOverrideBanner: React.FC<AIOverrideBannerProps> = ({
 
       <View style={styles.valueRow}>
         <View style={styles.valueBox}>
-          <Text style={[styles.valueLabel, { color: colors.textSecondary }]}>
+          <Text style={[styles.valueLabel, { color: colors.text.secondary }]}>
             AI Estimate
           </Text>
-          <Text style={[styles.value, { color: colors.text }]}>
+          <Text style={[styles.value, { color: colors.text.primary }]}>
             {aiValue.charAt(0).toUpperCase() + aiValue.slice(1)}
           </Text>
         </View>
 
         <View style={styles.valueBox}>
-          <Text style={[styles.valueLabel, { color: colors.textSecondary }]}>
+          <Text style={[styles.valueLabel, { color: colors.text.secondary }]}>
             Your Setting
           </Text>
-          <Text style={[styles.value, { color: colors.text }]}>
+          <Text style={[styles.value, { color: colors.text.primary }]}>
             {userValue
               ? userValue.charAt(0).toUpperCase() + userValue.slice(1)
               : 'Not set'}
@@ -72,17 +72,17 @@ export const AIOverrideBanner: React.FC<AIOverrideBannerProps> = ({
       </View>
 
       <View style={styles.actions}>
-        {isHighConfidence && (
+        {(
           <TouchableOpacity
             onPress={onAccept}
             style={[
               styles.button,
               styles.buttonPrimary,
-              { backgroundColor: colors.primary },
+              { backgroundColor: colors.brand.accent },
             ]}
             accessibilityLabel={`Accept AI estimate for ${label}`}
           >
-            <Text style={styles.buttonText}>Looks right</Text>
+            <Text style={styles.buttonText}>{isHighConfidence ? 'Looks right' : 'Accept'}</Text>
           </TouchableOpacity>
         )}
 
@@ -91,14 +91,14 @@ export const AIOverrideBanner: React.FC<AIOverrideBannerProps> = ({
           style={[
             styles.button,
             styles.buttonSecondary,
-            { borderColor: colors.primary },
+            { borderColor: colors.brand.accent },
           ]}
           accessibilityLabel={`Change ${label} setting`}
         >
           <Text style={[
             styles.buttonText,
             styles.buttonTextSecondary,
-            { color: colors.primary },
+            { color: colors.brand.accent },
           ]}>
             Change
           </Text>
@@ -107,8 +107,8 @@ export const AIOverrideBanner: React.FC<AIOverrideBannerProps> = ({
 
       {!isHighConfidence && (
         <View style={styles.lowConfidenceNotice}>
-          <Text style={[styles.noticeText, { color: colors.warning }]}>
-            ⚠️ The model was uncertain about this scan. Please review and set manually.
+          <Text style={[styles.noticeText, { color: colors.verdict.caution }]}>
+            The model was uncertain about this scan. Please review and set manually.
           </Text>
         </View>
       )}
@@ -117,86 +117,86 @@ export const AIOverrideBanner: React.FC<AIOverrideBannerProps> = ({
 };
 
 const styles = StyleSheet.create({
+  actions: {
+    flexDirection: 'row',
+    gap: theme.spacing.md,
+  },
   banner: {
-    padding: 16,
-    borderRadius: 16,
+    borderRadius: theme.radii.md,
     borderWidth: 1,
-    marginBottom: 16,
+    marginBottom: theme.spacing.lg,
+    padding: theme.spacing.lg,
+  },
+  button: {
+    alignItems: 'center',
+    borderRadius: theme.radii.md,
+    borderWidth: 1,
+    flex: 1,
+    paddingVertical: theme.spacing.lg,
+  },
+  buttonPrimary: {
+    borderWidth: 0,
+  },
+  buttonSecondary: {
+    backgroundColor: theme.colors.surface.raised,
+  },
+  buttonText: {
+    color: theme.colors.surface.raised,
+    fontSize: theme.typography.size.md,
+    fontWeight: '600',
+  },
+  buttonTextSecondary: {
+    color: theme.colors.brand.accent,
   },
   header: {
-    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
-  },
-  iconWrapper: {
-    marginRight: 12,
-  },
-  icon: {
-    fontSize: 24,
+    flexDirection: 'row',
+    marginBottom: theme.spacing.lg,
   },
   headerText: {
     flex: 1,
   },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
+  icon: {
+    fontSize: theme.typography.size.xxl,
+  },
+  iconWrapper: {
+    marginRight: theme.spacing.md,
+  },
+  lowConfidenceNotice: {
+    backgroundColor: theme.colors.surface.base,
+    borderRadius: theme.radii.md,
+    marginTop: theme.spacing.md,
+    padding: theme.spacing.md,
+  },
+  noticeText: {
+    fontSize: theme.typography.size.sm,
+    textAlign: 'center',
   },
   subtitle: {
-    fontSize: 13,
-    marginTop: 2,
+    fontSize: theme.typography.size.sm,
+    marginTop: theme.spacing.xs,
+  },
+  title: {
+    fontSize: theme.typography.size.md,
+    fontWeight: '600',
+  },
+  value: {
+    fontSize: theme.typography.size.md,
+    fontWeight: '600',
+  },
+  valueBox: {
+    backgroundColor: theme.colors.surface.base,
+    borderRadius: theme.radii.md,
+    flex: 1,
+    padding: theme.spacing.md,
+  },
+  valueLabel: {
+    fontSize: theme.typography.size.xs,
+    marginBottom: theme.spacing.xs,
   },
   valueRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
-  },
-  valueBox: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 12,
-    backgroundColor: '#F5F5F5',
-  },
-  valueLabel: {
-    fontSize: 12,
-    marginBottom: 4,
-  },
-  value: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  button: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-    borderWidth: 1,
-  },
-  buttonPrimary: {
-    borderColor: 'transparent',
-  },
-  buttonSecondary: {
-    backgroundColor: 'transparent',
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  buttonTextSecondary: {
-    color: '#007AFF',
-  },
-  lowConfidenceNotice: {
-    marginTop: 12,
-    padding: 12,
-    borderRadius: 8,
-    backgroundColor: '#FFF8E1',
-  },
-  noticeText: {
-    fontSize: 13,
-    textAlign: 'center',
+    gap: theme.spacing.md,
+    marginBottom: theme.spacing.lg,
   },
 });

@@ -5,14 +5,16 @@
  */
 
 import React from 'react';
+import { useRouter } from 'expo-router';
 import { View, Text, StyleSheet, SafeAreaView, StatusBar, TouchableOpacity } from 'react-native';
 import { useScan } from './hooks/useScan';
 import { CameraViewport } from './components/CameraViewport';
 import { AnalysisShimmer } from './components/AnalysisShimmer';
 import { ScanResultView } from './components/ScanResultView';
-import { theme } from '../../theme';
+import { theme } from '../theme';
 
 export const ScanScreen: React.FC = () => {
+  const router = useRouter();
   const {
     state,
     cameraPermission,
@@ -70,7 +72,7 @@ export const ScanScreen: React.FC = () => {
             onGalleryPick={pickFromGallery}
             onPermissionGranted={() => {}}
             permissionStatus={cameraPermission}
-            isCapturing={false}
+            isCapturing={isAnalyzing}
           />
         );
 
@@ -93,9 +95,7 @@ export const ScanScreen: React.FC = () => {
             onAccept={acceptAIInputs}
             onRetake={retakePhoto}
             onSetManually={() => {
-              // Navigate to profile screen for manual entry
-              // For now, just retake
-              retakePhoto();
+              router.push('/profile');
             }}
           />
         );
@@ -117,7 +117,7 @@ export const ScanScreen: React.FC = () => {
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.secondaryButton}
-                onPress={dismissError}
+                onPress={retakePhoto}
                 accessibilityLabel="Go back to camera"
               >
                 <Text style={styles.secondaryButtonText}>Retake Photo</Text>
@@ -139,106 +139,109 @@ export const ScanScreen: React.FC = () => {
         <Text style={styles.headerSubtitle}>Get personalized product recommendations</Text>
       </View>
       {renderContent()}
+      <TouchableOpacity onPress={() => router.push('/profile')} accessibilityLabel="Set profile manually">
+        <Text style={styles.secondaryButtonText}>Set profile manually</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: theme.colors.surface.base,
+    flex: 1,
   },
-  header: {
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.xl,
-    paddingBottom: theme.spacing.lg,
+  errorActions: {
+    gap: theme.spacing.md,
+    width: '100%',
   },
-  headerTitle: {
-    fontFamily: theme.typography.font.heading,
-    fontSize: theme.typography.size.xl,
-    fontWeight: theme.typography.weight.semibold,
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.xs,
-  },
-  headerSubtitle: {
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.md,
-    color: theme.colors.text.secondary,
-  },
-  permissionContainer: {
+  errorContainer: {
+    alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
     padding: theme.spacing.lg,
   },
-  permissionTitle: {
+  errorMessage: {
+    color: theme.colors.text.secondary,
+    fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.md,
+    marginBottom: theme.spacing.xl,
+    textAlign: 'center',
+  },
+  errorTitle: {
+    color: theme.colors.verdict.mismatch,
     fontFamily: theme.typography.font.heading,
     fontSize: theme.typography.size.xl,
     fontWeight: theme.typography.weight.semibold,
-    color: theme.colors.text.primary,
     marginBottom: theme.spacing.md,
     textAlign: 'center',
   },
-  permissionText: {
+  header: {
+    paddingBottom: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.lg,
+    paddingTop: theme.spacing.xl,
+  },
+  headerSubtitle: {
+    color: theme.colors.text.secondary,
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.md,
+  },
+  headerTitle: {
+    color: theme.colors.text.primary,
+    fontFamily: theme.typography.font.heading,
+    fontSize: theme.typography.size.xl,
+    fontWeight: theme.typography.weight.semibold,
+    marginBottom: theme.spacing.xs,
+  },
+  permissionContainer: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    padding: theme.spacing.lg,
+  },
+  permissionText: {
     color: theme.colors.text.secondary,
-    textAlign: 'center',
-    marginBottom: theme.spacing.xl,
+    fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.md,
     lineHeight: theme.typography.lineHeight.normal * theme.typography.size.md,
+    marginBottom: theme.spacing.xl,
+    textAlign: 'center',
+  },
+  permissionTitle: {
+    color: theme.colors.text.primary,
+    fontFamily: theme.typography.font.heading,
+    fontSize: theme.typography.size.xl,
+    fontWeight: theme.typography.weight.semibold,
+    marginBottom: theme.spacing.md,
+    textAlign: 'center',
   },
   primaryButton: {
-    width: '100%',
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.radii.md,
-    backgroundColor: theme.colors.brand.accent,
     alignItems: 'center',
+    backgroundColor: theme.colors.brand.accent,
+    borderRadius: theme.radii.md,
     marginBottom: theme.spacing.md,
+    paddingVertical: theme.spacing.md,
+    width: '100%',
   },
   primaryButtonText: {
+    color: theme.colors.text.onAccent,
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.lg,
     fontWeight: theme.typography.weight.semibold,
-    color: theme.colors.text.onAccent,
   },
   secondaryButton: {
-    width: '100%',
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.radii.md,
-    backgroundColor: theme.colors.surface.raised,
-    borderWidth: 1,
-    borderColor: theme.colors.surface.rule,
     alignItems: 'center',
+    backgroundColor: theme.colors.surface.raised,
+    borderColor: theme.colors.surface.rule,
+    borderRadius: theme.radii.md,
+    borderWidth: 1,
+    paddingVertical: theme.spacing.md,
+    width: '100%',
   },
   secondaryButtonText: {
+    color: theme.colors.text.primary,
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.lg,
     fontWeight: theme.typography.weight.medium,
-    color: theme.colors.text.primary,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: theme.spacing.lg,
-  },
-  errorTitle: {
-    fontFamily: theme.typography.font.heading,
-    fontSize: theme.typography.size.xl,
-    fontWeight: theme.typography.weight.semibold,
-    color: theme.colors.verdict.mismatch,
-    marginBottom: theme.spacing.md,
-    textAlign: 'center',
-  },
-  errorMessage: {
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.md,
-    color: theme.colors.text.secondary,
-    textAlign: 'center',
-    marginBottom: theme.spacing.xl,
-  },
-  errorActions: {
-    width: '100%',
-    gap: theme.spacing.md,
   },
 });

@@ -91,11 +91,11 @@ describe('evaluateSensitivity', () => {
     expect(result).toBe('caution');
   });
 
-  it('returns insufficient_data when product.partial_data is true', () => {
+  it('returns caution when a known sensitivity matches even if product.partial_data is true', () => {
     const profile = { ...baseProfile, sensitivities: ['fragrance'] };
     const product = { ...baseProduct, partial_data: true };
     const result = evaluateSensitivity(profile, product, baseIngredientConcerns);
-    expect(result).toBe('insufficient_data');
+    expect(result).toBe('caution');
   });
 
   it('returns insufficient_data when product.partial_data is true even with no sensitivities', () => {

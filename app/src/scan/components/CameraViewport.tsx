@@ -6,7 +6,7 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Platform } from 'react-native';
-import { Camera, CameraType } from 'expo-camera';
+import { Camera, CameraView, CameraType } from 'expo-camera';
 import { theme } from '../../theme';
 
 interface CameraViewportProps {
@@ -24,9 +24,10 @@ export const CameraViewport: React.FC<CameraViewportProps> = ({
   permissionStatus,
   isCapturing,
 }) => {
-  const cameraRef = useRef<Camera>(null);
+  const cameraRef = useRef<CameraView>(null);
+  const [captureError, setCaptureError] = useState('');
   const [hasPermission, setHasPermission] = React.useState(false);
-  const [cameraType, setCameraType] = useState<CameraType>(CameraType.front);
+  const [cameraType, setCameraType] = useState<CameraType>('front');
 
   useEffect(() => {
     if (permissionStatus === 'granted') {
@@ -41,19 +42,23 @@ export const CameraViewport: React.FC<CameraViewportProps> = ({
     if (!cameraRef.current || isCapturing) return;
 
     try {
+      if (Platform.OS !== 'web') {
+        setCaptureError('Native capture is unavailable in this build. Set your profile manually.');
+        return;
+      }
       const photo = await cameraRef.current.takePictureAsync({
         quality: 0.8,
         base64: false,
         exif: false,
       });
       onAnalyze(photo.uri);
-    } catch (error) {
-      console.error('Capture failed:', error);
+    } catch {
+      setCaptureError('The camera could not capture a photo. Please try again.');
     }
   };
 
   const toggleCamera = () => {
-    setCameraType((prev) => (prev === CameraType.front ? CameraType.back : CameraType.front));
+    setCameraType((prev) => (prev === 'front' ? 'back' : 'front'));
   };
 
   if (permissionStatus === 'denied') {
@@ -90,11 +95,11 @@ export const CameraViewport: React.FC<CameraViewportProps> = ({
 
   return (
     <View style={styles.container}>
-      <Camera
+      {captureError ? <Text accessibilityRole="alert">{captureError}</Text> : null}
+      <CameraView
         ref={cameraRef}
         style={styles.camera}
-        type={cameraType}
-        ratio="1:1"
+        facing={cameraType}
       >
         <View style={styles.overlay}>
           {/* Framing reticle */}
@@ -139,58 +144,68 @@ export const CameraViewport: React.FC<CameraViewportProps> = ({
             <Text style={styles.controlButtonText}>\u25B6</Text>
           </TouchableOpacity>
         </View>
-      </Camera>
+      </CameraView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.surface.base,
-  },
   camera: {
     flex: 1,
   },
-  overlay: {
-    flex: 1,
+  captureButton: {
+    alignItems: 'center',
+    backgroundColor: theme.colors.brand.accent,
+    borderRadius: 36,
+    height: 72,
     justifyContent: 'center',
+    width: 72,
+  },
+  captureButtonDisabled: {
+    opacity: 0.6,
+  },
+  captureInner: {
+    backgroundColor: theme.colors.brand.accent,
+    borderRadius: 24,
+    height: 48,
+    width: 48,
+  },
+  captureRing: {
     alignItems: 'center',
+    borderColor: theme.colors.text.onAccent,
+    borderRadius: 32,
+    borderWidth: 3,
+    height: 64,
+    justifyContent: 'center',
+    width: 64,
   },
-  reticle: {
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    borderWidth: 2,
-    borderColor: theme.colors.brand.accent,
-    backgroundColor: 'transparent',
+  captureRingCapturing: {
+    borderColor: theme.colors.text.onAccent,
   },
-  reticleText: {
-    marginTop: 16,
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.md,
-    color: theme.colors.text.primary,
-    textAlign: 'center',
-  },
-  controls: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    paddingHorizontal: theme.spacing.lg,
-    paddingBottom: theme.spacing.xl,
+  container: {
+    backgroundColor: theme.colors.surface.base,
+    flex: 1,
   },
   controlButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: theme.colors.surface.raised,
-    justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: theme.colors.surface.raised,
+    borderRadius: 28,
+    elevation: 3,
+    height: 56,
+    justifyContent: 'center',
     shadowColor: theme.colors.brand.ink,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3,
+    width: 56,
+  },
+  controlButtonText: { color: theme.colors.text.primary, fontSize: theme.typography.size.lg },
+  controls: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingBottom: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.lg,
   },
   flipButton: {
     backgroundColor: theme.colors.surface.raised,
@@ -198,97 +213,88 @@ const styles = StyleSheet.create({
   galleryButton: {
     backgroundColor: theme.colors.surface.raised,
   },
-  captureButton: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: theme.colors.brand.accent,
-    justifyContent: 'center',
+  loadingContainer: {
     alignItems: 'center',
-  },
-  captureButtonDisabled: {
-    opacity: 0.6,
-  },
-  captureRing: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    borderWidth: 3,
-    borderColor: theme.colors.text.onAccent,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  captureRingCapturing: {
-    borderColor: theme.colors.text.onAccent,
-  },
-  captureInner: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: theme.colors.brand.accent,
-  },
-  permissionContainer: {
+    backgroundColor: theme.colors.surface.base,
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    padding: theme.spacing.lg,
-    backgroundColor: theme.colors.surface.base,
   },
-  permissionTitle: {
-    fontFamily: theme.typography.font.heading,
-    fontSize: theme.typography.size.xl,
-    fontWeight: theme.typography.weight.semibold,
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.md,
-    textAlign: 'center',
-  },
-  permissionText: {
+  loadingText: {
+    color: theme.colors.text.secondary,
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.md,
-    color: theme.colors.text.secondary,
-    textAlign: 'center',
-    marginBottom: theme.spacing.xl,
-    lineHeight: theme.typography.lineHeight.normal * theme.typography.size.md,
+    marginTop: theme.spacing.md,
+  },
+  overlay: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
   },
   permissionButton: {
-    width: '100%',
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.radii.md,
-    backgroundColor: theme.colors.brand.accent,
     alignItems: 'center',
+    backgroundColor: theme.colors.brand.accent,
+    borderRadius: theme.radii.md,
     marginBottom: theme.spacing.md,
+    paddingVertical: theme.spacing.md,
+    width: '100%',
   },
   permissionButtonText: {
+    color: theme.colors.text.onAccent,
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.lg,
     fontWeight: theme.typography.weight.semibold,
-    color: theme.colors.text.onAccent,
+  },
+  permissionContainer: {
+    alignItems: 'center',
+    backgroundColor: theme.colors.surface.base,
+    flex: 1,
+    justifyContent: 'center',
+    padding: theme.spacing.lg,
   },
   permissionGalleryButton: {
-    width: '100%',
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.radii.md,
-    backgroundColor: theme.colors.surface.raised,
-    borderWidth: 1,
-    borderColor: theme.colors.surface.rule,
     alignItems: 'center',
+    backgroundColor: theme.colors.surface.raised,
+    borderColor: theme.colors.surface.rule,
+    borderRadius: theme.radii.md,
+    borderWidth: 1,
+    paddingVertical: theme.spacing.md,
+    width: '100%',
   },
   permissionGalleryButtonText: {
+    color: theme.colors.text.primary,
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.lg,
     fontWeight: theme.typography.weight.medium,
-    color: theme.colors.text.primary,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface.base,
-  },
-  loadingText: {
-    marginTop: theme.spacing.md,
+  permissionText: {
+    color: theme.colors.text.secondary,
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.md,
-    color: theme.colors.text.secondary,
+    lineHeight: theme.typography.lineHeight.normal * theme.typography.size.md,
+    marginBottom: theme.spacing.xl,
+    textAlign: 'center',
+  },
+  permissionTitle: {
+    color: theme.colors.text.primary,
+    fontFamily: theme.typography.font.heading,
+    fontSize: theme.typography.size.xl,
+    fontWeight: theme.typography.weight.semibold,
+    marginBottom: theme.spacing.md,
+    textAlign: 'center',
+  },
+  reticle: {
+    backgroundColor: theme.colors.surface.transparent,
+    borderColor: theme.colors.brand.accent,
+    borderRadius: 140,
+    borderWidth: 2,
+    height: 280,
+    width: 280,
+  },
+  reticleText: {
+    color: theme.colors.text.primary,
+    fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.md,
+    marginTop: 16,
+    textAlign: 'center',
   },
 });

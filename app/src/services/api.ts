@@ -14,7 +14,7 @@ export interface AnalyzeResponse {
     skin_type: { label: string; confidence: number };
     acne_severity: { label: string; confidence: number };
   };
-  db_record?: any;
+  db_record?: Record<string, unknown>;
 }
 
 export async function uploadScanImage({ imageUri, userToken, onProgress }: UploadOptions): Promise<AnalyzeResponse> {
@@ -40,7 +40,7 @@ export async function uploadScanImage({ imageUri, userToken, onProgress }: Uploa
     uri: formattedUri,
     name: filename,
     type: type,
-  } as any);
+  } as unknown as Blob);
 
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();

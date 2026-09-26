@@ -9,8 +9,14 @@ import { CameraViewport } from '../components/CameraViewport';
 // Mock expo-camera
 jest.mock('expo-camera', () => {
   const React = require('react');
+  const MockView = ({ children, ...props }: Record<string, any>) =>
+    React.createElement('View', { testID: 'camera-view', ...props }, children);
   return {
-    Camera: jest.fn(({ children, ...props }) => React.createElement('View', { testID: 'camera-view', ...props }, children)),
+    Camera: Object.assign(
+      jest.fn(({ children, ...props }: Record<string, any>) => React.createElement('View', { testID: 'camera-view', ...props }, children)),
+      { requestCameraPermissionsAsync: jest.fn() }
+    ),
+    CameraView: jest.fn((props: Record<string, any>) => React.createElement('View', { testID: 'camera-view', ...props }, props.children)),
     CameraType: {
       front: 'front',
       back: 'back',
@@ -121,6 +127,6 @@ describe('CameraViewport', () => {
     );
 
     const captureButton = getByTestId('capture-button');
-    expect(captureButton.props.accessibilityState?.disabled).toBe(true);
+    expect(captureButton.props.disabled ?? captureButton.props.accessibilityState?.disabled).toBe(true);
   });
 });

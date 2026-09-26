@@ -15,7 +15,7 @@ function getInferenceServerUrl(): string {
   // In Expo, process.env is not available at runtime.
   // Use Constants.expoConfig.extra or fallback.
   // For now, use a simple fallback. In production, this would come from app.config.js
-  return 'http://localhost:8000';
+  return process.env.EXPO_PUBLIC_INFERENCE_SERVER_URL || 'http://localhost:8000';
 }
 
 const INFERENCE_SERVER_URL = getInferenceServerUrl();

@@ -36,28 +36,28 @@ export const HomeScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: theme.colors.surface.base,
-  },
-  scrollContent: {
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.xl,
-    paddingBottom: theme.spacing.xxxl,
+    flex: 1,
   },
   header: {
     marginBottom: theme.spacing.xl,
   },
+  scrollContent: {
+    paddingBottom: theme.spacing.xxxl,
+    paddingHorizontal: theme.spacing.lg,
+    paddingTop: theme.spacing.xl,
+  },
+  subtitle: {
+    color: theme.colors.text.secondary,
+    fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.md,
+    lineHeight: theme.typography.lineHeight.normal * theme.typography.size.md,
+  },
   title: {
+    color: theme.colors.text.primary,
     fontFamily: theme.typography.font.heading,
     fontSize: theme.typography.size.xxl,
     fontWeight: theme.typography.weight.semibold,
-    color: theme.colors.text.primary,
     marginBottom: theme.spacing.xs,
-  },
-  subtitle: {
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.md,
-    color: theme.colors.text.secondary,
-    lineHeight: theme.typography.lineHeight.normal * theme.typography.size.md,
   },
 });

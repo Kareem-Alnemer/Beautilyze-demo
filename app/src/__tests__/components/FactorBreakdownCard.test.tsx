@@ -1,11 +1,12 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { FactorBreakdownCard } from '../../components/FactorBreakdownCard';
+import type { FactorResult } from '../../verdict/types';
 
 describe('FactorBreakdownCard', () => {
-  const baseFactor = {
+  const baseFactor: FactorResult = {
     name: 'skin_type_fit',
-    result: 'pass' as const,
+    result: 'pass',
     reason: 'Your skin type is oily; this product is tagged suitable for oily skin.',
   };
 
@@ -23,7 +24,7 @@ describe('FactorBreakdownCard', () => {
   });
 
   it('shows caution icon for caution result', () => {
-    const factor = { ...baseFactor, result: 'caution' as const, result: 'caution' };
+    const factor = { ...baseFactor, result: 'caution' as const };
     const { getByText } = render(React.createElement(FactorBreakdownCard, { factor, index: 0 }));
 
     expect(getByText('⚠')).toBeTruthy();
@@ -67,14 +68,14 @@ describe('FactorBreakdownCard', () => {
   });
 
   it('renders acne_fit with correct label', () => {
-    const factor = { name: 'acne_fit', result: 'pass' as const, reason: 'Test' };
+    const factor: FactorResult = { name: 'acne_fit', result: 'pass', reason: 'Test' };
     const { getByText } = render(React.createElement(FactorBreakdownCard, { factor, index: 1 }));
 
     expect(getByText('Acne-concern fit')).toBeTruthy();
   });
 
   it('renders age_fit with correct label', () => {
-    const factor = { name: 'age_fit', result: 'pass' as const, reason: 'Test' };
+    const factor: FactorResult = { name: 'age_fit', result: 'pass', reason: 'Test' };
     const { getByText } = render(React.createElement(FactorBreakdownCard, { factor, index: 2 }));
 
     expect(getByText('Age fit')).toBeTruthy();

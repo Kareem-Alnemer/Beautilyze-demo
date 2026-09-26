@@ -30,29 +30,29 @@ export const AnalysisShimmer: React.FC<AnalysisShimmerProps> = ({
 
 const styles = StyleSheet.create({
   container: {
+    alignItems: 'center',
+    backgroundColor: theme.colors.surface.base,
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
     padding: theme.spacing.lg,
-    backgroundColor: theme.colors.surface.base,
   },
   message: {
-    marginTop: theme.spacing.lg,
+    color: theme.colors.text.primary,
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.lg,
     fontWeight: theme.typography.weight.medium,
-    color: theme.colors.text.primary,
+    marginTop: theme.spacing.lg,
     textAlign: 'center',
   },
+  shimmerBar: {
+    backgroundColor: theme.colors.surface.rule,
+    borderRadius: 4,
+    height: 8,
+    width: 60,
+  },
   shimmerContainer: {
-    marginTop: theme.spacing.xl,
     flexDirection: 'row',
     gap: theme.spacing.sm,
-  },
-  shimmerBar: {
-    width: 60,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: theme.colors.surface.rule,
+    marginTop: theme.spacing.xl,
   },
 });

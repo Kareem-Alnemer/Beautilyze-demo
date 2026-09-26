@@ -14,7 +14,7 @@ jest.mock('expo-router', () => ({
 jest.mock('../../components/ProductSearchBar', () => {
   const React = require('react');
   return {
-    ProductSearchBar: ({ onProductSelect }) =>
+    ProductSearchBar: ({ onProductSelect }: Record<string, any>) =>
       React.createElement('View', { testID: 'product-search-bar' },
         React.createElement('Text', null, 'Search Bar'),
         React.createElement('TouchableOpacity', { testID: 'search-result-1', onPress: () => onProductSelect({ id: 'prod-1' }) },
@@ -28,7 +28,7 @@ jest.mock('../../components/ProductSearchBar', () => {
 jest.mock('../../components/RecentChecksList', () => {
   const React = require('react');
   return {
-    RecentChecksList: ({ onCheckSelect }) =>
+    RecentChecksList: ({ onCheckSelect }: Record<string, any>) =>
       React.createElement('View', { testID: 'recent-checks-list' },
         React.createElement('Text', null, 'Recent Checks'),
         React.createElement('TouchableOpacity', { testID: 'recent-check-1', onPress: () => onCheckSelect({ product_id: 'prod-2' }) },

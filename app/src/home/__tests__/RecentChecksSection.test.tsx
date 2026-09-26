@@ -36,7 +36,7 @@ jest.mock('../../profile/store', () => ({
 jest.mock('../../components/RecentChecksList', () => {
   const React = require('react');
   return {
-    RecentChecksList: ({ userId, onCheckSelect, limit, renderEmpty }) => {
+    RecentChecksList: ({ userId, onCheckSelect, limit, renderEmpty }: Record<string, any>) => {
       // Simulate empty state by calling renderEmpty
       if (renderEmpty) {
         return renderEmpty();

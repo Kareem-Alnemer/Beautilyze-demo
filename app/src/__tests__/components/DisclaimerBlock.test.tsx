@@ -30,7 +30,7 @@ describe('DisclaimerBlock', () => {
     const { getByText } = render(React.createElement(DisclaimerBlock));
 
     const container = getByText(FULL_DISCLAIMER).parent;
-    expect(container.props.style).toBeDefined();
+    expect(container?.props.style).toBeDefined();
   });
 
   it('has no close button or icon', () => {

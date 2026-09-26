@@ -34,17 +34,6 @@ export function evaluateSensitivity(
   product: Product,
   ingredientConcerns: IngredientConcern[] = []
 ): FactorState {
-  // If the product's ingredient data is incomplete, we cannot fully verify.
-  // Per blueprint §6.3 and §7.5, partial_data caps this factor at insufficient_data.
-  if (product.partial_data) {
-    return 'insufficient_data';
-  }
-
-  // If the user has no declared sensitivities, there's nothing to flag.
-  if (!profile.sensitivities || profile.sensitivities.length === 0) {
-    return 'pass';
-  }
-
   // Build a set of ingredient names (canonical + aliases) that have
   // is_sensitivity_flag === true, for fast lookup.
   // Also build a map from alias → canonical name for alias resolution.
@@ -69,23 +58,27 @@ export function evaluateSensitivity(
     s.toLowerCase().trim()
   );
 
-  // Check each normalized sensitivity against the product's normalized ingredients.
-  // The product ingredients are canonical names (aliases resolved per §7.5).
-  // User sensitivity might be a canonical name or an alias.
-  // If it's an alias, resolve to canonical and check if product has that canonical.
-  for (const sensitivity of normalizedSensitivities) {
-    // Direct match: user sensitivity matches a product ingredient directly
+  // A detected sensitivity conflict overrides insufficient-data handling:
+  // missing evidence must not hide a known match.
+  const hasConflict = normalizedSensitivities.some((sensitivity) => {
     if (product.ingredients_normalized.includes(sensitivity)) {
-      if (flaggedIngredients.has(sensitivity)) {
-        return 'caution';
-      }
+      if (flaggedIngredients.has(sensitivity)) return true;
     }
-    // Alias match: user sensitivity is an alias for a flagged ingredient;
-    // check if product has the canonical name
     const canonical = aliasToCanonical.get(sensitivity);
-    if (canonical && product.ingredients_normalized.includes(canonical)) {
-      return 'caution';
-    }
+    if (canonical && product.ingredients_normalized.includes(canonical)) return true;
+    return false;
+  });
+  if (hasConflict) return 'caution';
+
+  // If the product's ingredient data is incomplete, we cannot fully verify.
+  // Per blueprint §6.3 and §7.5, partial_data caps this factor at insufficient_data.
+  if (product.partial_data) {
+    return 'insufficient_data';
+  }
+
+  // If the user has no declared sensitivities, there's nothing to flag.
+  if (!profile.sensitivities || profile.sensitivities.length === 0) {
+    return 'pass';
   }
 
   // No flagged sensitivity ingredients found in a complete ingredient list.

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, FlatList, Keyboard } from 'react-native';
-import { useTheme } from '../../theme';
+import { theme } from '../../theme';
 
 interface ChipManagerProps {
   items: string[];
@@ -21,7 +21,7 @@ export const ChipManager: React.FC<ChipManagerProps> = ({
   suggestions = [],
   disabled = false,
 }) => {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing } = theme;
   const [inputText, setInputText] = React.useState('');
   const [showSuggestions, setShowSuggestions] = React.useState(false);
   const [filteredSuggestions, setFilteredSuggestions] = React.useState<string[]>([]);
@@ -59,7 +59,7 @@ export const ChipManager: React.FC<ChipManagerProps> = ({
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { color: colors.text }]}>{label}</Text>
+      <Text style={[styles.label, { color: colors.text.primary }]}>{label}</Text>
 
       <View style={styles.chipsContainer}>
         {items.map((item) => (
@@ -81,7 +81,7 @@ export const ChipManager: React.FC<ChipManagerProps> = ({
         <TextInput
           style={[
             styles.input,
-            { color: colors.text, borderColor: colors.border },
+            { color: colors.text.primary, borderColor: colors.surface.rule },
             disabled && styles.inputDisabled,
           ]}
           value={inputText}
@@ -89,8 +89,8 @@ export const ChipManager: React.FC<ChipManagerProps> = ({
           onFocus={() => setShowSuggestions(true)}
           onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
           placeholder={placeholder}
-          disabled={disabled}
-          autoCompleteType="off"
+          editable={!disabled}
+          autoComplete="off"
           textContentType="none"
           returnKeyType="done"
           onSubmitEditing={handleAdd}
@@ -112,7 +112,7 @@ export const ChipManager: React.FC<ChipManagerProps> = ({
                 onPress={() => handleSuggestionPress(item)}
                 style={styles.suggestionItem}
               >
-                <Text style={[styles.suggestionText, { color: colors.text }]}>{item}</Text>
+                <Text style={[styles.suggestionText, { color: colors.text.primary }]}>{item}</Text>
               </TouchableOpacity>
             )}
           />
@@ -120,7 +120,7 @@ export const ChipManager: React.FC<ChipManagerProps> = ({
       )}
 
       {items.length === 0 && (
-        <Text style={[styles.emptyHint, { color: colors.textSecondary }]}>
+        <Text style={[styles.emptyHint, { color: colors.text.secondary }]}>
           No {label.toLowerCase()} added yet
         </Text>
       )}
@@ -129,85 +129,85 @@ export const ChipManager: React.FC<ChipManagerProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: 16,
+  addButton: {
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.sm,
   },
-  label: {
-    fontSize: 16,
+  addButtonText: {
+    color: theme.colors.brand.accent,
+    fontSize: theme.typography.size.md,
     fontWeight: '600',
-    marginBottom: 12,
+  },
+  chip: {
+    alignItems: 'center',
+    backgroundColor: theme.colors.surface.base,
+    borderRadius: theme.radii.md,
+    flexDirection: 'row',
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+  },
+  chipRemove: {
+    padding: theme.spacing.xs,
+  },
+  chipRemoveText: {
+    color: theme.colors.brand.accent,
+    fontSize: theme.typography.size.md,
+    fontWeight: 'bold',
+  },
+  chipText: {
+    color: theme.colors.brand.accent,
+    fontSize: theme.typography.size.sm,
+    marginRight: theme.spacing.sm,
   },
   chipsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 12,
+    gap: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
   },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E8F0FE',
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+  container: {
+    marginBottom: theme.spacing.lg,
   },
-  chipText: {
-    fontSize: 14,
-    color: '#007AFF',
-    marginRight: 6,
-  },
-  chipRemove: {
-    padding: 2,
-  },
-  chipRemoveText: {
-    fontSize: 16,
-    color: '#007AFF',
-    fontWeight: 'bold',
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 12,
+  emptyHint: {
+    fontSize: theme.typography.size.sm,
+    marginTop: theme.spacing.sm,
+    textAlign: 'center',
   },
   input: {
     flex: 1,
-    padding: 14,
-    fontSize: 16,
+    fontSize: theme.typography.size.md,
+    padding: theme.spacing.lg,
   },
   inputDisabled: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: theme.colors.surface.base,
   },
-  addButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  addButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#007AFF',
-  },
-  suggestionsList: {
-    marginTop: 8,
-    backgroundColor: '#fff',
+  inputWrapper: {
+    alignItems: 'center',
+    backgroundColor: theme.colors.surface.raised,
+    borderRadius: theme.radii.md,
     borderWidth: 1,
-    borderRadius: 12,
-    borderColor: '#E0E0E0',
-    overflow: 'hidden',
+    flexDirection: 'row',
+    paddingHorizontal: theme.spacing.md,
+  },
+  label: {
+    fontSize: theme.typography.size.md,
+    fontWeight: '600',
+    marginBottom: theme.spacing.md,
   },
   suggestionItem: {
-    padding: 14,
+    borderBottomColor: theme.colors.surface.rule,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    padding: theme.spacing.lg,
   },
   suggestionText: {
-    fontSize: 16,
+    fontSize: theme.typography.size.md,
   },
-  emptyHint: {
-    marginTop: 8,
-    fontSize: 14,
-    textAlign: 'center',
+  suggestionsList: {
+    backgroundColor: theme.colors.surface.raised,
+    borderColor: theme.colors.surface.rule,
+    borderRadius: theme.radii.md,
+    borderWidth: 1,
+    marginTop: theme.spacing.sm,
+    overflow: 'hidden',
   },
 });

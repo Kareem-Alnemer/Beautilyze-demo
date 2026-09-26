@@ -35,6 +35,18 @@ Direction: see `principles.md` (Editorial Honest).
 | `surface.base` | `brand.paper` | Default background |
 | `surface.raised` | `#FFFFFF` | Cards on paper (sparingly) |
 | `surface.rule` | `#1F1B1810` | 1px divider rules (ink at 10% opacity) |
+| `surface.transparent` | `transparent` | Camera overlay cutouts (see-through, not a color) |
+| `surface.scrim` | `rgba(0,0,0,0.5)` | Photo legibility scrim over camera images |
+
+### Badge (history scan list)
+
+| Token | Value | Where used |
+|-------|-------|------------|
+| `badge.skinType` | `#007AFF` | Skin-type badge |
+| `badge.acneClear` | `#43a047` | Acne clear badge |
+| `badge.acneMild` | `#f9a825` | Acne mild badge |
+| `badge.acneModerate` | `#e53935` | Acne moderate badge |
+| `badge.acneSevere` | `#e53935` | Acne severe badge |
 
 ### Verdict — the signal triad
 

@@ -35,10 +35,10 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.sm,
   },
   text: {
+    color: theme.colors.text.secondary,
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.sm,
     fontWeight: theme.typography.weight.regular,
-    color: theme.colors.text.secondary,
     lineHeight: theme.typography.lineHeight.normal * theme.typography.size.sm,
   },
 });

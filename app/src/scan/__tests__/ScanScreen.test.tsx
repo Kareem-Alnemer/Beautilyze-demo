@@ -6,11 +6,17 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 
+// Mock expo-router (ScanScreen only uses useRouter for navigation)
+jest.mock('expo-router', () => ({
+  useRouter: () => ({ push: jest.fn(), back: jest.fn(), replace: jest.fn() }),
+}));
+
 // Mock expo-camera
 jest.mock('expo-camera', () => {
   const React = require('react');
   return {
-    Camera: jest.fn(({ children, ...props }) => React.createElement('View', { testID: 'camera-view', ...props }, children)),
+    Camera: jest.fn(({ children, ...props }: Record<string, any>) => React.createElement('View', { testID: 'camera-view', ...props }, children)),
+    CameraView: jest.fn(({ children, ...props }: Record<string, any>) => React.createElement('View', { testID: 'camera-view', ...props }, children)),
     CameraType: {
       front: 'front',
       back: 'back',
@@ -73,7 +79,7 @@ jest.mock('../hooks/useScan', () => ({
 jest.mock('../components/CameraViewport', () => {
   const React = require('react');
   return {
-    CameraViewport: ({ onAnalyze, onGalleryPick, onPermissionGranted, permissionStatus, isCapturing }) =>
+    CameraViewport: ({ onAnalyze, onGalleryPick, onPermissionGranted, permissionStatus, isCapturing }: Record<string, any>) =>
       React.createElement('View', { testID: 'camera-viewport' },
         React.createElement('Text', null, `CameraViewport: ${permissionStatus}`),
         React.createElement('TouchableOpacity', { testID: 'capture-btn', onPress: onAnalyze },
@@ -90,7 +96,7 @@ jest.mock('../components/CameraViewport', () => {
 jest.mock('../components/AnalysisShimmer', () => {
   const React = require('react');
   return {
-    AnalysisShimmer: ({ message }) =>
+    AnalysisShimmer: ({ message }: Record<string, any>) =>
       React.createElement('View', { testID: 'analysis-shimmer' },
         React.createElement('Text', null, message || 'Analyzing...')
       ),
@@ -101,7 +107,7 @@ jest.mock('../components/AnalysisShimmer', () => {
 jest.mock('../components/ScanResultView', () => {
   const React = require('react');
   return {
-    ScanResultView: ({ result, skinTypeEval, acneSeverityEval, onAccept, onRetake, onSetManually }) =>
+    ScanResultView: ({ result, skinTypeEval, acneSeverityEval, onAccept, onRetake, onSetManually }: Record<string, any>) =>
       React.createElement('View', { testID: 'scan-result-view' },
         React.createElement('Text', null, `Result: ${result?.skinType?.label}`),
         React.createElement('TouchableOpacity', { testID: 'accept-btn', onPress: onAccept },

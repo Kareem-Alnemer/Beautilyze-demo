@@ -26,4 +26,14 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
   },
   ignorePatterns: ['node_modules/', 'dist/', '.expo/'],
+  overrides: [{
+    files: ['**/*.test.ts', '**/*.test.tsx'],
+    rules: {
+      // Boundary doubles intentionally implement only the methods used by a test.
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
+      'react/prop-types': 'off',
+      'react/display-name': 'off',
+    },
+  }],
 };

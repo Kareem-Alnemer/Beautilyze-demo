@@ -56,7 +56,7 @@ class TestPredictSkinTypeEndpoint:
             files={"file": ("large.jpg", oversized_bytes, "image/jpeg")}
         )
         assert response.status_code == 413
-        assert "exceeds maximum" in response.json()["detail"]
+        assert "File too large" in response.json()["detail"]
 
     def test_predict_skin_type_no_file(self, client):
         response = client.post("/predict/skin-type")
@@ -100,7 +100,7 @@ class TestPredictAcneSeverityEndpoint:
             files={"file": ("large.jpg", oversized_bytes, "image/jpeg")}
         )
         assert response.status_code == 413
-        assert "exceeds maximum" in response.json()["detail"]
+        assert "File too large" in response.json()["detail"]
 
 
 class TestImageNotPersisted:

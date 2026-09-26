@@ -44,7 +44,7 @@ export const FactorBreakdownCard: React.FC<FactorBreakdownCardProps> = ({
   const resultLabel = resultLabels[factor.result] || factor.result;
 
   return (
-    <View style={styles.card}>
+    <View style={styles.card} testID={`factor-card-${index}`}>
       <TouchableOpacity
         style={styles.header}
         onPress={() => setExpanded(!expanded)}
@@ -79,54 +79,54 @@ export const FactorBreakdownCard: React.FC<FactorBreakdownCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    width: '100%',
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
     backgroundColor: theme.colors.surface.base,
     borderBottomWidth: 1,
     borderColor: theme.colors.surface.rule,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  iconContainer: {
-    width: 28,
-    alignItems: 'center',
-    marginRight: theme.spacing.sm,
-  },
-  icon: {
-    fontSize: theme.typography.size.lg,
-    fontWeight: theme.typography.weight.semibold,
-  },
-  headerContent: {
-    flex: 1,
-  },
-  name: {
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.md,
-    fontWeight: theme.typography.weight.medium,
-    color: theme.colors.text.primary,
-    marginBottom: 2,
-  },
-  result: {
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.sm,
-    fontWeight: theme.typography.weight.regular,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
+    width: '100%',
   },
   chevron: {
     fontSize: theme.typography.size.xs,
     fontWeight: theme.typography.weight.medium,
   },
+  header: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  headerContent: {
+    flex: 1,
+  },
+  icon: {
+    fontSize: theme.typography.size.lg,
+    fontWeight: theme.typography.weight.semibold,
+  },
+  iconContainer: {
+    alignItems: 'center',
+    marginRight: theme.spacing.sm,
+    width: 28,
+  },
+  name: {
+    color: theme.colors.text.primary,
+    fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.md,
+    fontWeight: theme.typography.weight.medium,
+    marginBottom: 2,
+  },
+  reason: {
+    color: theme.colors.text.secondary,
+    fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.sm,
+    fontWeight: theme.typography.weight.regular,
+    lineHeight: theme.typography.lineHeight.normal * theme.typography.size.sm,
+  },
   reasonContainer: {
     marginTop: theme.spacing.sm,
     paddingLeft: theme.spacing.lg + theme.spacing.sm + 28,
   },
-  reason: {
+  result: {
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.sm,
     fontWeight: theme.typography.weight.regular,
-    color: theme.colors.text.secondary,
-    lineHeight: theme.typography.lineHeight.normal * theme.typography.size.sm,
   },
 });

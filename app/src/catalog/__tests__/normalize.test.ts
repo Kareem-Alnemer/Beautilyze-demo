@@ -182,7 +182,9 @@ describe('normalizeIngredients', () => {
     const result = normalizeIngredients([], concerns);
     expect(result.ingredients_normalized).toEqual([]);
     expect(result.unmatched_count).toBe(0);
-    expect(result.partial_data).toBe(false);
+    // Empty list is missing evidence, not negative evidence:
+    // it cannot be verified, so it is partial/insufficient.
+    expect(result.partial_data).toBe(true);
   });
 
   it('preserves unmatched ingredients in normalized array', () => {

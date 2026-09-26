@@ -20,23 +20,23 @@ export const DisclaimerBlock: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
+    backgroundColor: theme.colors.surface.base,
+    borderColor: theme.colors.surface.rule,
+    borderTopWidth: 1,
     paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing.md,
-    backgroundColor: theme.colors.surface.base,
-    borderTopWidth: 1,
-    borderColor: theme.colors.surface.rule,
+    width: '100%',
   },
   divider: {
-    height: 1,
     backgroundColor: theme.colors.surface.rule,
+    height: 1,
     marginBottom: theme.spacing.sm,
   },
   text: {
+    color: theme.colors.text.secondary,
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.xs,
     fontWeight: theme.typography.weight.regular,
-    color: theme.colors.text.secondary,
     lineHeight: theme.typography.lineHeight.normal * theme.typography.size.xs,
   },
 });

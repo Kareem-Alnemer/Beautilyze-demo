@@ -33,7 +33,7 @@ jest.mock('../../profile/store', () => ({
 jest.mock('../ProfileSummaryCard', () => {
   const React = require('react');
   return {
-    ProfileSummaryCard: ({ onPress }) =>
+    ProfileSummaryCard: ({ onPress }: Record<string, any>) =>
       React.createElement('TouchableOpacity', { testID: 'profile-summary-card', onPress },
         React.createElement('Text', null, 'ProfileSummaryCard')
       ),
@@ -58,7 +58,7 @@ jest.mock('../QuickActionsBar', () => {
 jest.mock('../RecentChecksSection', () => {
   const React = require('react');
   return {
-    RecentChecksSection: ({ onCheckSelect, onViewAllPress, limit }) =>
+    RecentChecksSection: ({ onCheckSelect, onViewAllPress, limit }: Record<string, any>) =>
       React.createElement('View', { testID: 'recent-checks-section', onCheckSelect, onViewAllPress, limit },
         React.createElement('Text', null, 'RecentChecksSection')
       ),

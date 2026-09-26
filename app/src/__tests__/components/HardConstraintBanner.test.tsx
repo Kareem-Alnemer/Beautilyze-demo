@@ -85,7 +85,7 @@ describe('HardConstraintBanner', () => {
         hardConstraints: [
           { name: 'declared_allergen_conflict', result: 'fail', reason: '' },
           { name: 'sensitivity', result: 'caution', reason: '' },
-          { name: 'declared_allergen_conflict_2', result: 'insufficient_data', reason: '' },
+          { name: 'sensitivity', result: 'insufficient_data', reason: '' },
         ],
       })
     );

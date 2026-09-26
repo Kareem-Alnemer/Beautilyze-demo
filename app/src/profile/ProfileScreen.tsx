@@ -1,4 +1,6 @@
 import React from 'react';
+import { useShallow } from 'zustand/react/shallow';
+import { supabase } from '../lib/supabase';
 import { View, ScrollView, Text, TouchableOpacity, StyleSheet, SafeAreaView, Alert } from 'react-native';
 import { theme } from '../theme';
 import { useProfileStore, selectUserSkinType, selectUserAcneSeverity, selectAIProfile, isAIHighConfidence } from './store';
@@ -19,7 +21,7 @@ export const ProfileScreen: React.FC = () => {
   const age = useProfileStore((s) => s.age);
   const allergies = useProfileStore((s) => s.allergies);
   const sensitivities = useProfileStore((s) => s.sensitivities);
-  const aiProfile = useProfileStore(selectAIProfile);
+  const aiProfile = useProfileStore(useShallow(selectAIProfile));
   const isSkinTypeHighConfidence = isAIHighConfidence(useProfileStore.getState(), 'skin_type');
   const isAcneSeverityHighConfidence = isAIHighConfidence(useProfileStore.getState(), 'acne_severity');
 
@@ -51,8 +53,7 @@ export const ProfileScreen: React.FC = () => {
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Reset', style: 'destructive', onPress: () => {
-          // Reset would be implemented here
-          Alert.alert('Reset', 'Profile reset functionality to be implemented.');
+          useProfileStore.getState().resetProfile();
         }},
       ]
     );
@@ -77,7 +78,7 @@ export const ProfileScreen: React.FC = () => {
             confidence={aiProfile.skin_type_confidence}
             userValue={userSkinType}
             onAccept={acceptAISkinType}
-            onChange={() => {}}
+            onChange={() => setUserSkinType(null)}
             modelVersion={aiProfile.model_version}
           />
           <SkinTypeSelector
@@ -95,7 +96,7 @@ export const ProfileScreen: React.FC = () => {
             confidence={aiProfile.acne_severity_confidence}
             userValue={userAcneSeverity}
             onAccept={acceptAIAcneSeverity}
-            onChange={() => {}}
+            onChange={() => setUserAcneSeverity(null)}
             modelVersion={aiProfile.model_version}
           />
           <AcneSeveritySelector
@@ -149,6 +150,7 @@ export const ProfileScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
 
+        <TouchableOpacity onPress={() => { void supabase.auth.signOut(); }} accessibilityLabel="Sign out"><Text>Sign out</Text></TouchableOpacity>
         {/* Reset Button */}
         <View style={styles.resetButtonContainer}>
           <TouchableOpacity
@@ -167,26 +169,42 @@ export const ProfileScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: theme.colors.surface.base,
-  },
-  scrollContent: {
-    padding: theme.spacing.lg,
-    paddingBottom: theme.spacing.xxxl,
+    flex: 1,
   },
   header: {
     marginBottom: theme.spacing.xl,
   },
-  title: {
-    fontFamily: theme.typography.font.heading,
-    fontSize: theme.typography.size.xxl,
-    fontWeight: theme.typography.weight.semibold,
-    marginBottom: theme.spacing.xs,
+  resetButton: {
+    alignItems: 'center',
+    paddingVertical: theme.spacing.sm,
   },
-  subtitle: {
+  resetButtonContainer: {
+    marginBottom: theme.spacing.lg,
+  },
+  resetButtonText: {
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.md,
-    lineHeight: theme.typography.lineHeight.normal * theme.typography.size.md,
+    fontWeight: theme.typography.weight.medium,
+  },
+  saveButton: {
+    alignItems: 'center',
+    borderRadius: theme.radii.md,
+    paddingVertical: theme.spacing.md,
+  },
+  saveButtonContainer: {
+    marginBottom: theme.spacing.md,
+    marginTop: theme.spacing.xl,
+  },
+  saveButtonText: {
+    color: theme.colors.text.onAccent,
+    fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.lg,
+    fontWeight: theme.typography.weight.semibold,
+  },
+  scrollContent: {
+    padding: theme.spacing.lg,
+    paddingBottom: theme.spacing.xxxl,
   },
   section: {
     marginBottom: theme.spacing.xl,
@@ -197,31 +215,15 @@ const styles = StyleSheet.create({
     fontWeight: theme.typography.weight.semibold,
     marginBottom: theme.spacing.sm,
   },
-  saveButtonContainer: {
-    marginTop: theme.spacing.xl,
-    marginBottom: theme.spacing.md,
-  },
-  saveButton: {
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.radii.md,
-    alignItems: 'center',
-  },
-  saveButtonText: {
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.lg,
-    fontWeight: theme.typography.weight.semibold,
-    color: theme.colors.text.onAccent,
-  },
-  resetButtonContainer: {
-    marginBottom: theme.spacing.lg,
-  },
-  resetButton: {
-    paddingVertical: theme.spacing.sm,
-    alignItems: 'center',
-  },
-  resetButtonText: {
+  subtitle: {
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.md,
-    fontWeight: theme.typography.weight.medium,
+    lineHeight: theme.typography.lineHeight.normal * theme.typography.size.md,
+  },
+  title: {
+    fontFamily: theme.typography.font.heading,
+    fontSize: theme.typography.size.xxl,
+    fontWeight: theme.typography.weight.semibold,
+    marginBottom: theme.spacing.xs,
   },
 });

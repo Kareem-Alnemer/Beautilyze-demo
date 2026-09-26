@@ -8,7 +8,7 @@ Endpoints:
 """
 import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, File, UploadFile, HTTPException, status, Request, Response, Header
+from fastapi import FastAPI, HTTPException, status, Request, Response, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -29,9 +29,10 @@ from inference_server.preprocessing.image import (
 )
 from inference_server.models.skin_type import predict_skin_type
 from inference_server.models.acne_severity import predict_acne_severity
-from inference_server.models.pytorch_inference import run_inference
+from inference_server.preprocessing.upload import read_image_upload
+from starlette.concurrency import run_in_threadpool
 from inference_server.utils.privacy import ImageDataContext
-from inference_server.utils.supabase_client import insert_scan_result, get_supabase_client
+
 
 # Configure logging
 logging.basicConfig(level=settings.log_level)
@@ -45,7 +46,7 @@ def rate_limit_key(request: Request) -> str:
     - Health endpoint (/health) gets a unique key per IP (but will be exempted)
     """
     path = request.url.path
-    if path.startswith("/predict/"):
+    if (path.startswith("/predict/") or path == "/analyze"):
         return f"predict:{get_remote_address(request)}"
     # For other endpoints (like /health), use IP-based key
     return f"other:{get_remote_address(request)}"
@@ -107,7 +108,7 @@ app.add_middleware(
 async def privacy_headers_middleware(request: Request, call_next):
     """Add privacy headers to prediction endpoint responses."""
     response = await call_next(request)
-    if request.url.path.startswith("/predict/"):
+    if (request.url.path.startswith("/predict/") or request.url.path == "/analyze"):
         response.headers["Cache-Control"] = "no-store, max-age=0, must-revalidate"
         response.headers["Pragma"] = "no-cache"
     return response
@@ -123,50 +124,17 @@ async def health_check() -> HealthResponse:
     )
 
 
-async def _process_prediction(
-    file: UploadFile,
-    predict_fn,
-    endpoint_name: str,
-) -> PredictResponse:
-    """
-    Shared prediction logic for both endpoints.
-    Validates, preprocesses, predicts, and ensures privacy.
-    """
-    # Validate content type
+async def _process_prediction(request: Request, predict_fn, endpoint_name: str) -> PredictResponse:
+    image_bytes = await read_image_upload(request)
     try:
-        validate_image_content_type(file.content_type or "")
-    except ImageValidationError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-
-    # Read file bytes
-    image_bytes = await file.read()
-    
-    # Validate file size
-    try:
-        validate_image_size(len(image_bytes))
-    except ImageValidationError as e:
-        raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail=str(e))
-
-    # Process with privacy context (ensures memory cleanup)
-    with ImageDataContext(image_bytes) as img_bytes:
-        try:
-            # Preprocess
-            input_tensor = preprocess_image_bytes(img_bytes)
-        except ImageValidationError as e:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-        except Exception as e:
-            logger.error(f"Preprocessing failed: {e}")
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Image preprocessing failed")
-
-        # Predict
-        try:
-            result = predict_fn(input_tensor)
-        except Exception as e:
-            logger.error(f"Prediction failed: {e}")
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Prediction failed")
-
-    logger.info(f"{endpoint_name} prediction: {result.label} (confidence: {result.confidence})")
-    return result
+        with ImageDataContext(image_bytes) as img_bytes:
+            input_tensor = await run_in_threadpool(preprocess_image_bytes, img_bytes)
+            return await run_in_threadpool(predict_fn, input_tensor)
+    except ImageValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception:
+        logger.error("Inference failed for %s", endpoint_name)
+        raise HTTPException(status_code=503, detail="Prediction is unavailable")
 
 
 @app.post(
@@ -179,13 +147,13 @@ async def _process_prediction(
         500: {"description": "Prediction failed"},
     },
 )
-async def predict_skin_type_endpoint(request: Request, file: UploadFile = File(...)) -> PredictResponse:
+async def predict_skin_type_endpoint(request: Request) -> PredictResponse:
     """
     Predict skin type from uploaded image.
     Returns label (dry/normal/oily), confidence (0-1), and model_version.
     Rate limited to 10 requests per minute per IP (shared across prediction endpoints).
     """
-    return await _process_prediction(file, predict_skin_type, "skin-type")
+    return await _process_prediction(request, predict_skin_type, "skin-type")
 
 
 @app.post(
@@ -198,13 +166,13 @@ async def predict_skin_type_endpoint(request: Request, file: UploadFile = File(.
         500: {"description": "Prediction failed"},
     },
 )
-async def predict_acne_severity_endpoint(request: Request, file: UploadFile = File(...)) -> PredictResponse:
+async def predict_acne_severity_endpoint(request: Request) -> PredictResponse:
     """
     Predict acne severity from uploaded image.
     Returns label (mild/moderate/severe), confidence (0-1), and model_version.
     Rate limited to 10 requests per minute per IP (shared across prediction endpoints).
     """
-    return await _process_prediction(file, predict_acne_severity, "acne-severity")
+    return await _process_prediction(request, predict_acne_severity, "acne-severity")
 
 
 # Global exception handler for validation errors
@@ -226,94 +194,22 @@ async def validation_exception_handler(request, exc: ImageValidationError):
         500: {"description": "Analysis failed"},
     },
 )
-async def analyze_endpoint(
-    request: Request,
-    file: UploadFile = File(...),
-    authorization: Optional[str] = Header(None),
-) -> AnalyzeResponse:
-    """
-    Analyze image for skin type and acne severity, store result in Supabase.
-    
-    Accepts an image file upload, runs both predictions, optionally extracts
-    user ID from Supabase Authorization Bearer token, and stores the result.
-    
-    Returns combined analysis with database record status.
-    """
-    # Validate content type
-    try:
-        validate_image_content_type(file.content_type or "")
-    except ImageValidationError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-
-    # Read file bytes
-    image_bytes = await file.read()
-    
-    # Validate file size
-    try:
-        validate_image_size(len(image_bytes))
-    except ImageValidationError as e:
-        raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail=str(e))
-
-    # Extract user ID from Authorization header if present
-    user_id = None
-    if authorization and authorization.startswith("Bearer "):
-        token = authorization[7:]  # Remove "Bearer "
-        print(f"[AUTH DEBUG] Authorization header received: True")
-        # Try to get user from Supabase
-        client = get_supabase_client()
-        if not client:
-            print("[AUTH ERROR] Supabase client is NONE. Check SUPABASE_URL and SUPABASE_ANON_KEY environment variables on Render.")
-        else:
-            try:
-                user_response = client.auth.get_user(token)
-                print(f"[AUTH SUCCESS] Verified user_id: {user_response.user.id}")
-                user_id = user_response.user.id
-            except Exception as e:
-                print(f"[AUTH ERROR] client.auth.get_user failed: {str(e)}")
-    else:
-        print(f"[AUTH DEBUG] Authorization header received: False")
-
-    # Run inference using PyTorch models
+async def analyze_endpoint(request: Request) -> AnalyzeResponse:
+    """Compatibility endpoint; persistence belongs to the authenticated app."""
+    image_bytes = await read_image_upload(request)
     try:
         with ImageDataContext(image_bytes) as img_bytes:
-            # Preprocess
-            input_tensor = preprocess_image_bytes(img_bytes)
-            
-            # Run both predictions
-            result = run_inference(image_bytes)
-    except Exception as e:
-        logger.error(f"Analysis failed: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Analysis failed")
-
-    skin_type_label = result["skin_type"]["label"]
-    skin_type_confidence = result["skin_type"]["confidence"]
-    acne_label = result["acne_severity"]["label"]
-    acne_confidence = result["acne_severity"]["confidence"]
-
-    logger.info(f"Analysis: skin_type={skin_type_label} ({skin_type_confidence}), acne_severity={acne_label} ({acne_confidence})")
-
-    # Insert into Supabase
-    db_record = insert_scan_result(
-        skin_type=skin_type_label,
-        skin_confidence=skin_type_confidence,
-        acne_severity=acne_label,
-        acne_confidence=acne_confidence,
-        user_id=user_id,
-    )
-
-    print(f"[DB DEBUG] DB insert result: {db_record}")
-
-    # Determine response status
-    response_status = "success" if db_record else "partial"
-
-    return AnalyzeResponse(
-        status=response_status,
-        data={
-            "skin_type": {"label": skin_type_label, "confidence": skin_type_confidence},
-            "acne_severity": {"label": acne_label, "confidence": acne_confidence},
-        },
-        db_record=db_record,
-    )
+            tensor = await run_in_threadpool(preprocess_image_bytes, img_bytes)
+            skin = await run_in_threadpool(predict_skin_type, tensor)
+            acne = await run_in_threadpool(predict_acne_severity, tensor)
+        return AnalyzeResponse(status="success", data={
+            "skin_type": skin.model_dump(), "acne_severity": acne.model_dump(),
+        })
+    except ImageValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception:
+        logger.error("Combined inference failed")
+        raise HTTPException(status_code=503, detail="Prediction is unavailable")
 
 
 if __name__ == "__main__":

@@ -5,10 +5,12 @@
  * Hydrates profile store via setAIProfile on acceptance.
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { Platform } from 'react-native';
 import { Camera } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
-import { useProfileStore } from '../profile/store';
+import { useProfileStore } from '../../profile/store';
+import type { SkinType, AcneSeverity } from '../../verdict/types';
 import { predictBoth } from '../api';
 import {
   ScanState,
@@ -23,6 +25,8 @@ import {
 const CONFIDENCE_THRESHOLD = 0.60;
 
 export function useScan(): UseScanReturn {
+  const generation = useRef(0);
+  useEffect(() => () => { generation.current++; }, []);
   const [state, setState] = useState<ScanState>('PERMISSIONS_REQUIRED');
   const [cameraPermission, setCameraPermission] = useState<CameraPermissionStatus>('undetermined');
   const [capturedUri, setCapturedUri] = useState<string | null>(null);
@@ -63,9 +67,14 @@ export function useScan(): UseScanReturn {
   }, []);
 
   const pickFromGallery = useCallback(async () => {
+    if (Platform.OS !== 'web') {
+      setError({ message: 'Photo selection is unavailable in this build. Set your profile manually.' });
+      setState('ERROR_RETRY');
+      return;
+    }
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
-      allowsEditing: true,
+      allowsEditing: false,
       aspect: [1, 1],
       quality: 0.8,
     });
@@ -81,12 +90,15 @@ export function useScan(): UseScanReturn {
   const analyzePhoto = useCallback(async (uri?: string) => {
     const imageUri = uri || capturedUri;
     if (!imageUri) return;
-
+    const request = ++generation.current;
+    setCapturedUri(imageUri);
+    setState('ANALYZING');
     setIsAnalyzing(true);
     setError(null);
 
     try {
       const result = await predictBoth(imageUri);
+      if (request !== generation.current) return;
       setScanResult(result);
 
       // Evaluate confidence for each field
@@ -98,6 +110,7 @@ export function useScan(): UseScanReturn {
 
       setState('RESULT_REVIEW');
     } catch (err) {
+      if (request !== generation.current) return;
       const error: InferenceError = {
         message: err instanceof Error ? err.message : 'Analysis failed',
         code: 'INFERENCE_ERROR',
@@ -105,7 +118,7 @@ export function useScan(): UseScanReturn {
       setError(error);
       setState('ERROR_RETRY');
     } finally {
-      setIsAnalyzing(false);
+      if (request === generation.current) setIsAnalyzing(false);
     }
   }, [capturedUri]);
 
@@ -123,23 +136,26 @@ export function useScan(): UseScanReturn {
     []
   );
 
-  const acceptAIInputs = useCallback(() => {
+  const acceptAIInputs = useCallback((field: 'skinType' | 'acneSeverity') => {
     if (!scanResult) return;
 
     // Hydrate profile store with AI predictions
     setAIProfile({
-      ai_skin_type: scanResult.skinType.label,
-      ai_acne_severity: scanResult.acneSeverity.label,
+      ai_skin_type: scanResult.skinType.label as SkinType,
+      ai_acne_severity: scanResult.acneSeverity.label as AcneSeverity,
       skin_type_confidence: scanResult.skinType.confidence,
       acne_severity_confidence: scanResult.acneSeverity.confidence,
       model_version: scanResult.skinType.model_version, // both use same model version
     });
-
+    if (field === 'skinType') useProfileStore.getState().acceptAISkinType();
+    else useProfileStore.getState().acceptAIAcneSeverity();
     // Optionally navigate to verdict screen or stay on result review
     // For now, stay on result review to show acceptance
   }, [scanResult, setAIProfile]);
 
   const retakePhoto = useCallback(() => {
+    generation.current++;
+    setIsAnalyzing(false);
     setCapturedUri(null);
     setScanResult(null);
     setSkinTypeEvaluation(null);

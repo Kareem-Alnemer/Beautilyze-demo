@@ -17,6 +17,8 @@ interface RecentCheck {
 }
 
 interface RecentChecksListProps {
+  limit?: number;
+  renderEmpty?: () => React.ReactNode;
   userId: string;
   onCheckSelect: (check: RecentCheck) => void;
 }
@@ -29,6 +31,8 @@ interface RecentChecksListProps {
 export const RecentChecksList: React.FC<RecentChecksListProps> = ({
   userId,
   onCheckSelect,
+  limit = 5,
+  renderEmpty,
 }) => {
   const [checks, setChecks] = React.useState<RecentCheck[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -37,7 +41,7 @@ export const RecentChecksList: React.FC<RecentChecksListProps> = ({
     const loadChecks = async () => {
       setLoading(true);
       try {
-        const data = await getRecentChecks(userId, 5);
+        const data = await getRecentChecks(userId, limit);
         setChecks(data);
       } catch {
         setChecks([]);
@@ -46,7 +50,7 @@ export const RecentChecksList: React.FC<RecentChecksListProps> = ({
       }
     };
     loadChecks();
-  }, [userId]);
+  }, [userId, limit]);
 
   if (loading) {
     return (
@@ -56,6 +60,7 @@ export const RecentChecksList: React.FC<RecentChecksListProps> = ({
     );
   }
 
+  if (checks.length === 0 && renderEmpty) return <>{renderEmpty()}</>;
   if (checks.length === 0) {
     return (
       <View style={styles.emptyContainer}>
@@ -121,87 +126,87 @@ function formatVerdict(verdict: string): string {
 }
 
 const styles = StyleSheet.create({
+  checkBrand: {
+    color: theme.colors.text.secondary,
+    fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.sm,
+    fontWeight: theme.typography.weight.regular,
+    marginTop: 2,
+  },
+  checkInfo: {
+    flex: 1,
+  },
+  checkItem: {
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderColor: theme.colors.surface.rule,
+    flexDirection: 'row',
+    paddingVertical: theme.spacing.sm,
+  },
+  checkName: {
+    color: theme.colors.text.primary,
+    fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.md,
+    fontWeight: theme.typography.weight.medium,
+  },
   container: {
     width: '100%',
   },
-  sectionTitle: {
+  emptyContainer: {
+    alignItems: 'center',
+    padding: theme.spacing.xl,
+  },
+  emptySubtext: {
+    color: theme.colors.text.tertiary,
     fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.lg,
-    fontWeight: theme.typography.weight.semibold,
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.lg,
+    fontSize: theme.typography.size.sm,
+  },
+  emptyText: {
+    color: theme.colors.text.secondary,
+    fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.md,
+    fontWeight: theme.typography.weight.medium,
+    marginBottom: theme.spacing.xs,
   },
   list: {
     paddingHorizontal: theme.spacing.lg,
   },
   loadingContainer: {
-    padding: theme.spacing.lg,
     alignItems: 'center',
+    padding: theme.spacing.lg,
   },
   loadingText: {
+    color: theme.colors.text.tertiary,
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.md,
-    color: theme.colors.text.tertiary,
-  },
-  emptyContainer: {
-    padding: theme.spacing.xl,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.md,
-    fontWeight: theme.typography.weight.medium,
-    color: theme.colors.text.secondary,
-    marginBottom: theme.spacing.xs,
-  },
-  emptySubtext: {
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.sm,
-    color: theme.colors.text.tertiary,
-  },
-  checkItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: theme.spacing.sm,
-    borderBottomWidth: 1,
-    borderColor: theme.colors.surface.rule,
-  },
-  thumbnail: {
-    width: 40,
-    height: 40,
-    borderRadius: theme.radii.sm,
-    marginRight: theme.spacing.sm,
-  },
-  placeholderThumbnail: {
-    backgroundColor: theme.colors.surface.rule,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   placeholderIcon: {
     fontSize: 18,
   },
-  checkInfo: {
-    flex: 1,
+  placeholderThumbnail: {
+    alignItems: 'center',
+    backgroundColor: theme.colors.surface.rule,
+    justifyContent: 'center',
   },
-  checkName: {
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.md,
-    fontWeight: theme.typography.weight.medium,
+  sectionTitle: {
     color: theme.colors.text.primary,
-  },
-  checkBrand: {
     fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.sm,
-    fontWeight: theme.typography.weight.regular,
-    color: theme.colors.text.secondary,
-    marginTop: 2,
+    fontSize: theme.typography.size.lg,
+    fontWeight: theme.typography.weight.semibold,
+    marginBottom: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.lg,
+  },
+  thumbnail: {
+    borderRadius: theme.radii.sm,
+    height: 40,
+    marginRight: theme.spacing.sm,
+    width: 40,
   },
   verdictBadge: {
+    backgroundColor: theme.colors.surface.rule,
+    borderRadius: theme.radii.sm,
     paddingHorizontal: theme.spacing.sm,
     paddingVertical: theme.spacing.xs,
-    borderRadius: theme.radii.sm,
-    backgroundColor: theme.colors.surface.rule,
   },
   verdictText: {
     fontFamily: theme.typography.font.body,

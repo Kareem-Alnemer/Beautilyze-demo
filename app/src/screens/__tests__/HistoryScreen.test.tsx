@@ -123,7 +123,7 @@ const mockHistoryData = [
   },
 ];
 
-let mockGetScanHistory = jest.fn().mockResolvedValue(mockHistoryData);
+const mockGetScanHistory = jest.fn().mockResolvedValue(mockHistoryData);
 
 jest.mock('../../catalog/api', () => ({
   getScanHistory: (...args: unknown[]) => mockGetScanHistory(...args),

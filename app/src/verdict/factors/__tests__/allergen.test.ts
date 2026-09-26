@@ -52,11 +52,13 @@ describe('evaluateDeclaredAllergenConflict', () => {
     expect(result).toBe('fail');
   });
 
-  it('returns insufficient_data when product.partial_data is true', () => {
+  it('returns fail when a known allergen matches even if product.partial_data is true', () => {
+    // Blueprint §6.5 step 1 precedes step 2: a detected conflict
+    // overrides insufficient-data handling.
     const profile = { ...baseProfile, allergies: ['niacinamide'] };
     const product = { ...baseProduct, partial_data: true };
     const result = evaluateDeclaredAllergenConflict(profile, product);
-    expect(result).toBe('insufficient_data');
+    expect(result).toBe('fail');
   });
 
   it('returns insufficient_data when product.partial_data is true even with no allergies', () => {

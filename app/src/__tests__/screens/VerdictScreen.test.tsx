@@ -12,7 +12,7 @@ jest.mock('expo-router', () => ({
 }));
 
 // Mock useVerdict hook with MATCH verdict
-jest.mock('../../verdict/hooks/useVerdict', () => ({
+jest.mock('../../catalog/useVerdict', () => ({
   useVerdict: () => ({
     verdict: {
       verdict: 'match',

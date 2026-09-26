@@ -3,7 +3,8 @@ import { View, ScrollView, Text, TouchableOpacity, StyleSheet, SafeAreaView, Act
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { theme } from '../theme';
 import { useProfileStore } from '../profile/store';
-import { useVerdict } from '../verdict/hooks/useVerdict';
+import { useVerdict } from '../catalog/useVerdict';
+import { useShallow } from 'zustand/react/shallow';
 import { VerdictBadge } from '../components/VerdictBadge';
 import { ScoreLine } from '../components/ScoreLine';
 import { HardConstraintBanner } from '../components/HardConstraintBanner';
@@ -17,13 +18,13 @@ import { DisclaimerBlock } from '../components/DisclaimerBlock';
 export const VerdictScreen: React.FC = () => {
   const router = useRouter();
   const { productId } = useLocalSearchParams<{ productId: string }>();
-  const profile = useProfileStore((s) => ({
+  const profile = useProfileStore(useShallow((s) => ({
     user_skin_type: s.user_skin_type,
     user_acne_severity: s.user_acne_severity,
     age: s.age,
     allergies: s.allergies,
     sensitivities: s.sensitivities,
-  }));
+  })));
 
   const { verdict, product, loading, error, refetch } = useVerdict(productId || '', profile);
 
@@ -42,7 +43,7 @@ export const VerdictScreen: React.FC = () => {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>We couldn't check this product right now.</Text>
+          <Text style={styles.errorText}>{"We couldn't check this product right now."}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={refetch}>
             <Text style={styles.retryButtonText}>Retry</Text>
           </TouchableOpacity>
@@ -85,7 +86,7 @@ export const VerdictScreen: React.FC = () => {
         {allInsufficient && (
           <View style={styles.insufficientNote}>
             <Text style={styles.insufficientText}>
-              We don't have enough information about this product to give a confident answer.
+              {"We don't have enough information about this product to give a confident answer."}
             </Text>
           </View>
         )}
@@ -120,109 +121,109 @@ export const VerdictScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.surface.base,
-  },
-  scrollContent: {
-    paddingBottom: theme.spacing.xxxl,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
+  actionButton: {
     alignItems: 'center',
-    paddingTop: theme.spacing.xxxl,
   },
-  loadingText: {
-    marginTop: theme.spacing.md,
+  actionButtonText: {
+    color: theme.colors.text.primary,
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.lg,
-    color: theme.colors.text.secondary,
+    fontWeight: theme.typography.weight.medium,
+    textDecorationLine: 'underline',
+  },
+  actionContainer: {
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.lg,
+  },
+  container: {
+    backgroundColor: theme.colors.surface.base,
+    flex: 1,
   },
   errorContainer: {
+    alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
     paddingHorizontal: theme.spacing.lg,
   },
   errorText: {
+    color: theme.colors.text.secondary,
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.md,
-    color: theme.colors.text.secondary,
-    textAlign: 'center',
     marginBottom: theme.spacing.lg,
-  },
-  retryButton: {
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.md,
-    backgroundColor: theme.colors.brand.accent,
-    borderRadius: theme.radii.md,
-  },
-  retryButtonText: {
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.lg,
-    fontWeight: theme.typography.weight.medium,
-    color: theme.colors.text.onAccent,
-  },
-  productByline: {
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.md,
-    paddingBottom: theme.spacing.sm,
-  },
-  productName: {
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.md,
-    fontWeight: theme.typography.weight.medium,
-    color: theme.colors.text.primary,
-  },
-  productBrand: {
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.sm,
-    fontWeight: theme.typography.weight.regular,
-    color: theme.colors.text.secondary,
-    marginTop: 2,
-  },
-  insufficientNote: {
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.sm,
-    backgroundColor: theme.colors.surface.base,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: theme.colors.surface.rule,
-  },
-  insufficientText: {
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.sm,
-    fontWeight: theme.typography.weight.regular,
-    color: theme.colors.text.secondary,
     textAlign: 'center',
-    lineHeight: theme.typography.lineHeight.normal * theme.typography.size.sm,
   },
   factorsContainer: {
     paddingHorizontal: theme.spacing.lg,
     paddingTop: theme.spacing.md,
   },
   factorsHeading: {
+    color: theme.colors.text.secondary,
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.xs,
     fontWeight: theme.typography.weight.medium,
-    color: theme.colors.text.secondary,
     letterSpacing: 0.08 * theme.typography.size.xs,
-    textTransform: 'uppercase',
     marginBottom: theme.spacing.sm,
+    textTransform: 'uppercase',
   },
-  actionContainer: {
+  insufficientNote: {
+    backgroundColor: theme.colors.surface.base,
+    borderBottomWidth: 1,
+    borderColor: theme.colors.surface.rule,
+    borderTopWidth: 1,
     paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.lg,
+    paddingVertical: theme.spacing.sm,
   },
-  actionButton: {
+  insufficientText: {
+    color: theme.colors.text.secondary,
+    fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.sm,
+    fontWeight: theme.typography.weight.regular,
+    lineHeight: theme.typography.lineHeight.normal * theme.typography.size.sm,
+    textAlign: 'center',
+  },
+  loadingContainer: {
     alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    paddingTop: theme.spacing.xxxl,
   },
-  actionButtonText: {
+  loadingText: {
+    color: theme.colors.text.secondary,
+    fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.lg,
+    marginTop: theme.spacing.md,
+  },
+  productBrand: {
+    color: theme.colors.text.secondary,
+    fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.sm,
+    fontWeight: theme.typography.weight.regular,
+    marginTop: 2,
+  },
+  productByline: {
+    paddingBottom: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.lg,
+    paddingTop: theme.spacing.md,
+  },
+  productName: {
+    color: theme.colors.text.primary,
+    fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.md,
+    fontWeight: theme.typography.weight.medium,
+  },
+  retryButton: {
+    backgroundColor: theme.colors.brand.accent,
+    borderRadius: theme.radii.md,
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing.md,
+  },
+  retryButtonText: {
+    color: theme.colors.text.onAccent,
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.lg,
     fontWeight: theme.typography.weight.medium,
-    color: theme.colors.text.primary,
-    textDecorationLine: 'underline',
+  },
+  scrollContent: {
+    paddingBottom: theme.spacing.xxxl,
   },
 });

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
-import { useTheme } from '../../theme';
+import { theme } from '../../theme';
 
 interface AgeInputProps {
   value: number | null;
@@ -19,13 +19,11 @@ export const AgeInput: React.FC<AgeInputProps> = ({
   min = 13,
   max = 100,
 }) => {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing } = theme;
   const [text, setText] = React.useState(value?.toString() || '');
 
   React.useEffect(() => {
-    if (value !== null) {
-      setText(value.toString());
-    }
+    setText(value?.toString() ?? '');
   }, [value]);
 
   const handleChange = (newText: string) => {
@@ -34,7 +32,7 @@ export const AgeInput: React.FC<AgeInputProps> = ({
       onChange(null);
       return;
     }
-    const num = parseInt(newText, 10);
+    const num = Number(newText);
     if (!isNaN(num) && num >= min && num <= max) {
       onChange(num);
     }
@@ -44,7 +42,7 @@ export const AgeInput: React.FC<AgeInputProps> = ({
     if (text === '') {
       onChange(null);
     } else {
-      const num = parseInt(text, 10);
+      const num = Number(text);
       if (!isNaN(num) && num >= min && num <= max) {
         onChange(num);
       } else {
@@ -57,12 +55,12 @@ export const AgeInput: React.FC<AgeInputProps> = ({
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { color: colors.text }]}>{label}</Text>
+      <Text style={[styles.label, { color: colors.text.primary }]}>{label}</Text>
       <View style={styles.inputWrapper}>
         <TextInput
           style={[
             styles.input,
-            { color: colors.text, borderColor: colors.border },
+            { color: colors.text.primary, borderColor: colors.surface.rule },
             disabled && styles.inputDisabled,
           ]}
           value={text}
@@ -70,20 +68,20 @@ export const AgeInput: React.FC<AgeInputProps> = ({
           onBlur={handleBlur}
           keyboardType="numeric"
           placeholder={`Enter age (${min}-${max})`}
-          disabled={disabled}
+          editable={!disabled}
           maxLength={3}
-          autoCompleteType="off"
+          autoComplete="off"
           textContentType="none"
         />
-        <Text style={[styles.unit, { color: colors.textSecondary }]}>years</Text>
+        <Text style={[styles.unit, { color: colors.text.secondary }]}>years</Text>
       </View>
       {value !== null && (
-        <Text style={[styles.hint, { color: colors.textSecondary }]}>
+        <Text style={[styles.hint, { color: colors.text.secondary }]}>
           Age {value} is within the valid range ({min}-{max})
         </Text>
       )}
-      {text && (parseInt(text, 10) < min || parseInt(text, 10) > max) && (
-        <Text style={[styles.error, { color: colors.error }]}>
+      {text && (Number(text) < min || Number(text) > max) && (
+        <Text style={[styles.error, { color: colors.verdict.mismatch }]}>
           Age must be between {min} and {max}
         </Text>
       )}
@@ -93,39 +91,39 @@ export const AgeInput: React.FC<AgeInputProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
+    marginBottom: theme.spacing.lg,
   },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 12,
+  error: {
+    fontSize: theme.typography.size.sm,
+    marginTop: theme.spacing.sm,
   },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderRadius: 12,
+  hint: {
+    fontSize: theme.typography.size.sm,
+    marginTop: theme.spacing.sm,
   },
   input: {
     flex: 1,
-    padding: 16,
-    fontSize: 18,
+    fontSize: theme.typography.size.lg,
+    padding: theme.spacing.lg,
     textAlign: 'center',
   },
   inputDisabled: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: theme.colors.surface.base,
+  },
+  inputWrapper: {
+    alignItems: 'center',
+    backgroundColor: theme.colors.surface.raised,
+    borderRadius: theme.radii.md,
+    borderWidth: 1,
+    flexDirection: 'row',
+  },
+  label: {
+    fontSize: theme.typography.size.md,
+    fontWeight: '600',
+    marginBottom: theme.spacing.md,
   },
   unit: {
-    paddingRight: 16,
-    fontSize: 16,
-  },
-  hint: {
-    marginTop: 8,
-    fontSize: 13,
-  },
-  error: {
-    marginTop: 8,
-    fontSize: 13,
+    fontSize: theme.typography.size.md,
+    paddingRight: theme.spacing.lg,
   },
 });
