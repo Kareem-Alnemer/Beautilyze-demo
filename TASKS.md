@@ -52,8 +52,10 @@ acceptance criteria.
 - [ ] `app/jest.config.js`
 - [ ] `app/.eslintrc.cjs`
 - [ ] `app/.prettierrc`
-- [ ] Remove `--passWithNoTests` from test script once real tests exist (post-verdict-engine)
-- [x] `inference-server/pyproject.toml`
+- [x] `inference-server/Dockerfile` — Multi-stage Dockerfile (builder + runtime, non-root user, healthcheck)
+- [x] `inference-server/.dockerignore` — Excludes tests, caches, env files, model weights
+- [x] `docker-compose.yml` — Root compose for local inference server orchestration
+- [x] `app/eas.json` — EAS build profiles (development, preview, production)
 - [x] `inference-server/main.py`
 - [x] `inference-server/config.py`
 - [x] `inference-server/.env.example`
@@ -213,4 +215,5 @@ acceptance criteria.
 
 - [x] 2026-09-26: \pp/src/scan/\ � Scan screen with 5-state machine (PERMISSIONS_REQUIRED ? CAMERA_ACTIVE ? ANALYZING ? RESULT_REVIEW / ERROR_RETRY), camera/gallery capture, concurrent inference API calls, confidence evaluation (threshold 0.60), terminology-compliant UI, profile store hydration. 26 tests pass. Design doc at \docs/design/screens/scan.md\.
 - [x] 2026-09-26: \pp/src/home/\ + \pp/(tabs)/\ � Home screen dashboard (ProfileSummaryCard, QuickActionsBar, RecentChecksSection) with root tab navigation (Home, Scan, Search, Profile). Expo Router (tabs) layout, Ionicons, theme-driven styling. 31 tests pass. Design doc at \docs/design/screens/home.md\.
-- [x] 2026-09-26: \.github/workflows/ci.yml\ � Unified CI/CD pipeline with parallel jobs: mobile-test (Node 20, typecheck + lint + Jest) and inference-test (Python 3.11, pytest). Concurrency cancellation, npm/pip caching, working-directory isolation. 62+ tests pass across both stacks.
+- [x] 2026-09-26: \.github/workflows/ci.yml\ � Unified CI/CD pipeline with parallel jobs: mobile-test (Node 20, typecheck + lint + Jest) and inference-test (Python 3.11, pytest). Concurrency cancellation, npm/pip caching, working-directory isolation. 62+ tests pass across both stacks.
+- [x] 2026-09-26: \inference-server/Dockerfile\ + \.dockerignore\ + \docker-compose.yml\ + \pp/eas.json\ � Production deployment scaffolding: multi-stage Dockerfile (python:3.11-slim, non-root user, uvicorn workers, healthcheck), .dockerignore, root compose (port 8000), EAS profiles (development/preview/production). Learning doc at \docs/learning/15-production-deployment-scaffolding.md\.

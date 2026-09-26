@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  inference:
+    build:
+      context: ./inference-server
+      dockerfile: Dockerfile
+    container_name: beautilyze-inference
+    ports:
+      - "8000:8000"
+    environment:
+      - MODEL_MODE=mock
+      - MODEL_VERSION=mock-v1
+      - HOST=0.0.0.0
+      - PORT=8000
+      - RELOAD=false
+      - LOG_LEVEL=INFO
+      - MAX_FILE_SIZE_MB=5
+      - ALLOWED_CONTENT_TYPES=image/jpeg,image/png
+      - IMAGE_INPUT_SIZE=224
+      - CORS_ALLOW_ORIGINS=http://localhost:8081,http://127.0.0.1:8081,exp://127.0.0.1:8081
+      - CORS_ALLOW_CREDENTIALS=false
+      - CORS_ALLOW_METHODS=*
+      - CORS_ALLOW_HEADERS=*
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
