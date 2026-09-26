@@ -8,7 +8,8 @@
     "userInterfaceStyle": "light",
     "plugins": [
       "expo-camera",
-      "expo-image-picker"
+      "expo-image-picker",
+      "expo-secure-store"
     ],
     "ios": {
       "supportsTablet": true,

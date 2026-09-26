@@ -11,6 +11,7 @@
     "expo-camera": "~57.0.5",
     "expo-image-picker": "~57.0.20",
     "expo-router": "^57.0.23",
+    "expo-secure-store": "~57.0.4",
     "expo-status-bar": "~57.0.1",
     "jest": "~29.7.0",
     "jest-expo": "^57.0.4",
