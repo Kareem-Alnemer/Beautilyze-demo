@@ -161,7 +161,7 @@ acceptance criteria.
 - [x] `app/src/catalog/api.ts` — Supabase product queries
 - [x] `app/src/screens/ScanScreen.tsx` (implemented at `app/src/scan/ScanScreen.tsx` with full state machine, tests, design doc)
 - [x] `app/src/screens/HomeScreen.tsx` (implemented at `app/src/home/HomeScreen.tsx` with tab navigation, 31 tests passing)
-- [ ] `app/src/screens/HistoryScreen.tsx` (should-have)
+- [x] `app/src/screens/HistoryScreen.tsx` (should-have)
 - [ ] `app/src/screens/OnboardingScreen.tsx` (should-have)
 
 ---
@@ -220,3 +220,5 @@ acceptance criteria.
 - [x] 2026-09-26: \inference-server/Dockerfile\ + \.dockerignore\ + \docker-compose.yml\ + \pp/eas.json\ � Production deployment scaffolding: multi-stage Dockerfile (python:3.11-slim, non-root user, uvicorn workers, healthcheck), .dockerignore, root compose (port 8000), EAS profiles (development/preview/production). Learning doc at \docs/learning/15-production-deployment-scaffolding.md\.
 - [x] 2026-09-26: \inference-server/inference_server/main.py\ + \config.py\ + \tests/test_privacy.py\ � Security & privacy hardening per blueprint §8.1, §8.4. Rate limiting (10 req/min shared across /predict/* via application_limits + custom key function), privacy headers (Cache-Control: no-store, Pragma: no-cache on all /predict/* responses), CORS lockdown (explicit origins in production, wildcard in dev), health endpoint exempt. 15 new tests, all 68 tests pass. Learning doc at \docs/learning/16-security-and-privacy-hardening.md\.
 - [x] 2026-09-26: \inference-server/inference_server/main.py\ + \schemas/prediction.py\ + \utils/supabase_client.py\ + \models/pytorch_inference.py\ + \config.py\ + \supabase/migrations/004_scans_table.sql\ + \scripts/test_api.py\ � FastAPI /analyze endpoint per blueprint §8.1, §8.3, §9.1. Combined skin type + acne severity analysis in single POST, optional user_id from Bearer token, Supabase scans table insert with RLS, graceful degradation to "partial" status if DB unavailable. PyTorch models loaded lazily from checkpoints with dynamic class loading. Test script with synthetic image fallback. All 68 tests pass. Learning doc at \docs/learning/17-fastapi-analyze-endpoint.md\.
+
+- [x] 2026-09-26: \app/src/screens/HistoryScreen.tsx + __tests__/HistoryScreen.test.tsx + catalog/api.ts (getScanHistory) + theme/colors.ts (badge palette) � Scan history screen per blueprint §4.2, §9.1. Chronological FlatList with verdict, skin type badge (#007AFF), acne severity badges (green/yellow/red), compatibility score, formatted timestamps (MMM DD, YYYY • h:mm A), pull-to-refresh, loading/empty/error states, graceful offline/unauthenticated fallback. 10 tests pass. Learning doc at \docs/learning/18-scan-history-screen.md\.

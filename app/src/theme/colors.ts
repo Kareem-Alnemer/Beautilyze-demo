@@ -21,6 +21,13 @@ export const colors = {
     mismatch: '#C43F3B',
     neutral: '#6B6259',
   },
+  badge: {
+    skinType: '#007AFF',
+    acneClear: '#43a047',
+    acneMild: '#f9a825',
+    acneModerate: '#e53935',
+    acneSevere: '#e53935',
+  },
 } as const;
 
 export type Colors = typeof colors;

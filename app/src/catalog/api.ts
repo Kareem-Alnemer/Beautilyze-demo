@@ -108,3 +108,55 @@ export async function getRecentChecks(userId: string, limit = 5): Promise<Array<
     product: Array.isArray(item.product) ? item.product[0] : item.product,
   }));
 }
+
+/**
+ * Get full scan/check history for the current user (for HistoryScreen).
+ * Returns paginated results ordered chronologically (newest first).
+ */
+export interface ScanHistoryItem {
+  id: string;
+  product_id: string;
+  verdict: 'match' | 'caution' | 'mismatch';
+  factors_json: {
+    hard_constraints: Array<{ name: string; result: string }>;
+    compatibility_factors: Array<{ name: string; result: string; reason: string }>;
+  };
+  created_at: string;
+  product: Pick<Product, 'id' | 'name' | 'brand' | 'image_url'>;
+}
+
+export async function getScanHistory(
+  userId: string,
+  limit = 50,
+  offset = 0
+): Promise<ScanHistoryItem[]> {
+  const { data, error } = await supabase
+    .from('checks')
+    .select(`
+      id,
+      product_id,
+      verdict,
+      factors_json,
+      created_at,
+      product:products!inner (
+        id,
+        name,
+        brand,
+        image_url
+      )
+    `)
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  if (error) {
+    console.error('getScanHistory error:', error);
+    throw new Error('Failed to load scan history');
+  }
+
+  // Supabase returns product as array due to the join, but it's a single object
+  return (data ?? []).map((item: any) => ({
+    ...item,
+    product: Array.isArray(item.product) ? item.product[0] : item.product,
+  }));
+}
