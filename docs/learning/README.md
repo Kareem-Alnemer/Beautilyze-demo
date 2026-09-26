@@ -30,5 +30,6 @@ team — so that every line of code can be explained and defended.
 | 10 | 10-search-and-verdict-screens.md | Search & Verdict UI screens with locked composition | 2026-09-25 |
 | 11 | 11-inference-server.md | FastAPI inference server with mock/PyTorch/ONNX models | 2026-09-25 |
 | 12 | 12-scan-screen-and-ai-workflow.md | Scan screen state machine & AI workflow integration | 2026-09-26 |
+| 13 | 13-home-screen-and-navigation.md | Home screen dashboard & root tab navigation | 2026-09-26 |
 
 The agent adds one row per task.

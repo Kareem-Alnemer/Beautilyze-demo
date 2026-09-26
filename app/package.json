@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.ts",
   "dependencies": {
+    "@expo/vector-icons": "^15.0.2",
     "@supabase/supabase-js": "^2.117.2",
     "@testing-library/react-native": "^13.2.0",
     "babel-preset-expo": "~57.0.0",

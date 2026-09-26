@@ -158,7 +158,7 @@ acceptance criteria.
 - [x] `app/src/verdict/hooks/useVerdict.ts` — Fetch product + evaluate verdict hook
 - [x] `app/src/catalog/api.ts` — Supabase product queries
 - [x] `app/src/screens/ScanScreen.tsx` (implemented at `app/src/scan/ScanScreen.tsx` with full state machine, tests, design doc)
-- [ ] `app/src/screens/HomeScreen.tsx`
+- [x] `app/src/screens/HomeScreen.tsx` (implemented at `app/src/home/HomeScreen.tsx` with tab navigation, 31 tests passing)
 - [ ] `app/src/screens/HistoryScreen.tsx` (should-have)
 - [ ] `app/src/screens/OnboardingScreen.tsx` (should-have)
 
@@ -213,3 +213,4 @@ acceptance criteria.
 - [x] 2026-09-25: inference-server/tests/ � 53 pytest tests (schemas, preprocessing, mock models, endpoints) covering all 17 test cases.
 
 - [x] 2026-09-26: \pp/src/scan/\ � Scan screen with 5-state machine (PERMISSIONS_REQUIRED ? CAMERA_ACTIVE ? ANALYZING ? RESULT_REVIEW / ERROR_RETRY), camera/gallery capture, concurrent inference API calls, confidence evaluation (threshold 0.60), terminology-compliant UI, profile store hydration. 26 tests pass. Design doc at \docs/design/screens/scan.md\.
+- [x] 2026-09-26: \pp/src/home/\ + \pp/(tabs)/\ � Home screen dashboard (ProfileSummaryCard, QuickActionsBar, RecentChecksSection) with root tab navigation (Home, Scan, Search, Profile). Expo Router (tabs) layout, Ionicons, theme-driven styling. 31 tests pass. Design doc at \docs/design/screens/home.md\.
