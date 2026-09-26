@@ -157,7 +157,7 @@ acceptance criteria.
 - [x] `app/src/components/RecentChecksList.tsx` — Recent checks from Supabase
 - [x] `app/src/verdict/hooks/useVerdict.ts` — Fetch product + evaluate verdict hook
 - [x] `app/src/catalog/api.ts` — Supabase product queries
-- [ ] `app/src/screens/ScanScreen.tsx`
+- [x] `app/src/screens/ScanScreen.tsx` (implemented at `app/src/scan/ScanScreen.tsx` with full state machine, tests, design doc)
 - [ ] `app/src/screens/HomeScreen.tsx`
 - [ ] `app/src/screens/HistoryScreen.tsx` (should-have)
 - [ ] `app/src/screens/OnboardingScreen.tsx` (should-have)
@@ -211,3 +211,5 @@ acceptance criteria.
 - [x] 2026-09-25: inference-server/inference_server/main.py � FastAPI app with /health, /predict/skin-type, /predict/acne-severity per �8.3.
 - [x] 2026-09-25: inference-server/inference_server/utils/privacy.py � Image discard utilities per �8.4 (in-memory only, no disk writes).
 - [x] 2026-09-25: inference-server/tests/ � 53 pytest tests (schemas, preprocessing, mock models, endpoints) covering all 17 test cases.
+
+- [x] 2026-09-26: \pp/src/scan/\ � Scan screen with 5-state machine (PERMISSIONS_REQUIRED ? CAMERA_ACTIVE ? ANALYZING ? RESULT_REVIEW / ERROR_RETRY), camera/gallery capture, concurrent inference API calls, confidence evaluation (threshold 0.60), terminology-compliant UI, profile store hydration. 26 tests pass. Design doc at \docs/design/screens/scan.md\.
