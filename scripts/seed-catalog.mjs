@@ -139,31 +139,48 @@ function formatArrayForSql(arr) {
 }
 
 /**
- * Converts a product ID (e.g., "prod-1" or "1") to a valid UUID string.
- * Uses a deterministic mapping: prod-1 -> 00000000-0000-0000-0000-000000000001
+ * Converts a product ID to a deterministic UUID string.
+ * prod-N keeps its legacy mapping (prod-1 -> ...0001) so databases seeded
+ * earlier stay stable. Any other id (slug, number) hashes to a stable
+ * UUID instead of collapsing to ...0001 (which caused PK collisions).
  */
 function toUuid(id) {
-  // Extract numeric part from prod-N or use the ID directly if it's a number
-  let num = 1;
-  if (id.startsWith('prod-')) {
-    num = parseInt(id.replace('prod-', ''), 10);
-  } else if (!isNaN(parseInt(id, 10))) {
-    num = parseInt(id, 10);
-  }
+  const raw = String(id ?? '').trim();
+  const prodMatch = /^prod-(\d+)$/.exec(raw);
+  if (prodMatch) return uuidFromNum(parseInt(prodMatch[1], 10));
+  if (/^\d+$/.test(raw)) return uuidFromNum(parseInt(raw, 10));
+  return uuidFromString(raw || 'unknown');
+}
+
+function uuidFromNum(num) {
   // Ensure positive integer
   num = Math.max(1, num);
   // Format as 32-char hex, padded, then insert UUID dashes
   const hex = num.toString(16).padStart(32, '0');
-  return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20,32)}`;
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`;
+}
+
+function uuidFromString(value) {
+  // FNV-1a 64-bit, run twice with different offsets -> stable 128-bit hex.
+  const hash64 = (offset) => {
+    let hash = BigInt(offset);
+    for (const ch of value) {
+      hash ^= BigInt(ch.codePointAt(0));
+      hash = (hash * 1099511628211n) & 0xffffffffffffffffn;
+    }
+    return hash.toString(16).padStart(16, '0');
+  };
+  const hex = hash64('0xcbf29ce484222325') + hash64('0x84222325cbf29ce4');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`;
 }
 
 /**
  * Validates and sanitizes skin_type_tags.
- * Valid skin types: normal, dry, oily, combination.
+ * Valid skin types (DB skin_type ENUM): dry, normal, oily.
  * If 'sensitive' is found, remove it from skin_type_tags and add 'sensitivity' to concern_tags.
  */
 function sanitizeSkinTypeTags(skinTypeTags, concernTags) {
-  const validSkinTypes = new Set(['normal', 'dry', 'oily', 'combination']);
+  const validSkinTypes = new Set(['normal', 'dry', 'oily']);
   const sanitizedSkinTypes = [];
   let hasSensitive = false;
 

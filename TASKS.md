@@ -140,6 +140,8 @@ acceptance criteria.
 - [x] `supabase/migrations/002_rls_policies.sql`
 - [x] `supabase/migrations/003_indexes.sql`
 - [x] `supabase/migrations/004_scans_table.sql`
+- [x] 2026-09-26: `supabase/migrations/006_remap_sensitive_tags.sql` — idempotent `sensitive`→`sensitivity` remap on prod-2/6/9/10 (text-space comparison; seed script UUID + enum fixes alongside)
+- [x] 2026-09-26: `docs/ai-evaluation.md` — §5.7 methodology with [PENDING] placeholders, canonical 3-class sets, learning doc 22
 
 ---
 
@@ -182,10 +184,10 @@ acceptance criteria.
 
 ## Manual tasks pending
 
-- [M] Apply Supabase migrations in order through `005_save_profile.sql` on a live project, then confirm `save_profile` RPC exists and a profile save round-trips
-- [M] Seed the catalog on the live project (`node scripts/seed-catalog.mjs`) and confirm 10 products / 26 ingredient concerns load
-- [M] Run the app on a device (Expo Go): sign in, set manual profile, search a product, confirm verdict + disclaimer render
-- [M] Run the inference server locally (`uvicorn`) and confirm Scan flow `/analyze` returns labels from a real photo (photo must not persist)
+- [M] Gate 1: apply migrations 001–006 on a live Supabase project; confirm 006 runs cleanly (idempotent; expect 0 rows changed on freshly seeded DBs)
+- [M] Gate 2: regenerate + apply seed (`node scripts/seed-catalog.mjs`, 30 distinct UUIDs verified); confirm 30 products / 26 concerns load. NOTE: a DB seeded with the pre-fix seed holds 20 rows colliding on prod-1's UUID — delete those before re-seeding
+- [M] Gate 3: Expo Go device run — OnboardingScreen → HomeScreen → ScanScreen → VerdictScreen → HistoryScreen
+- [M] Gate 4 (corrected): live /analyze scan; verify in-memory processing only — zero /tmp or disk writes, zero DB/storage calls for image bytes, logs carry telemetry without image data
 
 ---
 

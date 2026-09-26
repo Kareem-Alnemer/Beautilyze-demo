@@ -39,5 +39,6 @@ team — so that every line of code can be explained and defended.
 | 19 | 19-stabilization-review.md | Stabilization review: typecheck, lint, tests, boundaries | 2026-09-26 |
 | 20 | 20-catalog-expansion-30-products.md | Catalog expansion to 30 products | 2026-09-26 |
 | 21 | 21-onboarding-screen.md | Onboarding screen (first-run baseline form) | 2026-09-26 |
+| 22 | 22-ai-accuracy-documentation.md | Migration 006 + AI evaluation documentation | 2026-09-26 |
 
 The agent adds one row per task.
