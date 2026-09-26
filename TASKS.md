@@ -19,7 +19,19 @@ acceptance criteria.
 
 ## In flight
 
-(none)
+- [~] 2026-09-26: Approved stabilization and learning corrections. Track acceptance in docs/repair-plan.md. App gates green (typecheck, eslint --quiet, Jest 357 pass; server pytest 70 pass). Remaining release gates need a human: live migrations incl. 005, catalog seed, Expo Go device run, real-photo /analyze.
+
+---
+
+## Done — stabilization review 2026-09-26
+
+- [x] Foundation: single router root (inlined tab layout, removed legacy `app/(tabs)/` + stray `app/services/`), typecheck + lint clean, Jest ESM config fixed, ScanScreen/CameraViewport mocks fixed
+- [x] Identity: atomic `save_profile` RPC added as migration 005 (insert WITH CHECK + one-transaction profile/allergies/sensitivities); AuthGate + store verified, no schema edits in place
+- [x] Manual flow: QuickActionsBar restored to design-doc copy, catalog/api `any` fixed, VerdictScreen confirmed user_* only, useVerdict path confirmed (`app/src/catalog/useVerdict.ts`)
+- [x] Scanning: acne endpoint stream-consumed bug fixed (Request-only), oversize fixture + message fixed, server DB code removed (no credentials, no client, no dep, no env block) per repair plan
+- [x] Catalog/history: `scripts/validate-catalog.mjs` added and passing (10 products, 26 concerns), seed reproducible (no diff), README drift fixed, no evidence fabricated
+- [x] Release: CI contract verified (`npm run typecheck`, `npm run lint`, `npm test`, `pytest`); live DB/device checks left as explicit MANUAL tasks below
+- [x] Learning: `docs/learning/19-stabilization-review.md` + index row added in AGENTS.md §15 format
 
 ---
 
@@ -136,9 +148,10 @@ acceptance criteria.
 - [x] `catalog/products.csv` with headers
 - [x] `catalog/ingredients.csv` with headers
 - [x] First 10 products annotated (with cross-check)
+- [x] 2026-09-26: 20 additional products annotated (catalog now 30 total, validator zero errors, seed regen clean; learning doc 20)
 - [x] `scripts/seed-catalog.mjs`
 - [x] `app/src/catalog/normalize.ts`
-- [ ] `scripts/validate-catalog.ts`
+- [x] `scripts/validate-catalog.mjs` — Closed-vocab, evidence, and unmatched-threshold checks (run: `node scripts/validate-catalog.mjs`)
 
 ---
 
@@ -158,17 +171,21 @@ acceptance criteria.
 - [x] `app/src/components/ProductSearchBar.tsx` — Search input with dropdown
 - [x] `app/src/components/RecentChecksList.tsx` — Recent checks from Supabase
 - [x] `app/src/verdict/hooks/useVerdict.ts` — Fetch product + evaluate verdict hook
+  (implemented at `app/src/catalog/useVerdict.ts`; TASKS path above is stale — canonical path is the catalog one)
 - [x] `app/src/catalog/api.ts` — Supabase product queries
 - [x] `app/src/screens/ScanScreen.tsx` (implemented at `app/src/scan/ScanScreen.tsx` with full state machine, tests, design doc)
 - [x] `app/src/screens/HomeScreen.tsx` (implemented at `app/src/home/HomeScreen.tsx` with tab navigation, 31 tests passing)
 - [x] `app/src/screens/HistoryScreen.tsx` (should-have)
-- [ ] `app/src/screens/OnboardingScreen.tsx` (should-have)
+- [x] `app/src/screens/OnboardingScreen.tsx` (should-have) — 2026-09-26 first-run baseline form with local completion flag, route + gate, 7 tests, learning doc 21
 
 ---
 
 ## Manual tasks pending
 
-(none)
+- [M] Apply Supabase migrations in order through `005_save_profile.sql` on a live project, then confirm `save_profile` RPC exists and a profile save round-trips
+- [M] Seed the catalog on the live project (`node scripts/seed-catalog.mjs`) and confirm 10 products / 26 ingredient concerns load
+- [M] Run the app on a device (Expo Go): sign in, set manual profile, search a product, confirm verdict + disclaimer render
+- [M] Run the inference server locally (`uvicorn`) and confirm Scan flow `/analyze` returns labels from a real photo (photo must not persist)
 
 ---
 
