@@ -258,16 +258,20 @@ async def analyze_endpoint(
     user_id = None
     if authorization and authorization.startswith("Bearer "):
         token = authorization[7:]  # Remove "Bearer "
+        print(f"[AUTH DEBUG] Authorization header received: True")
         # Try to get user from Supabase
         client = get_supabase_client()
-        if client:
+        if not client:
+            print("[AUTH ERROR] Supabase client is NONE. Check SUPABASE_URL and SUPABASE_ANON_KEY environment variables on Render.")
+        else:
             try:
                 user_response = client.auth.get_user(token)
-                if user_response.user:
-                    user_id = user_response.user.id
-            except Exception:
-                # Invalid token, proceed without user_id
-                pass
+                print(f"[AUTH SUCCESS] Verified user_id: {user_response.user.id}")
+                user_id = user_response.user.id
+            except Exception as e:
+                print(f"[AUTH ERROR] client.auth.get_user failed: {str(e)}")
+    else:
+        print(f"[AUTH DEBUG] Authorization header received: False")
 
     # Run inference using PyTorch models
     try:
@@ -296,6 +300,8 @@ async def analyze_endpoint(
         acne_confidence=acne_confidence,
         user_id=user_id,
     )
+
+    print(f"[DB DEBUG] DB insert result: {db_record}")
 
     # Determine response status
     response_status = "success" if db_record else "partial"
