@@ -185,6 +185,54 @@ function sanitizeSkinTypeTags(skinTypeTags, concernTags) {
   return { skinTypeTags: sanitizedSkinTypes, concernTags: sanitizedConcernTags };
 }
 
+/**
+ * Sanitizes helps_with tags to valid concern_tag ENUM values.
+ * Valid concern_tag ENUM: 'acne', 'oil_control', 'hydration', 'dryness', 'sensitivity'
+ * Maps: 'oily' -> 'oil_control', drops 'barrier', 'anti_aging', etc.
+ */
+function sanitizeHelpsWith(tags) {
+  const validConcernTags = new Set(['acne', 'oil_control', 'hydration', 'dryness', 'sensitivity']);
+  const tagMapping = {
+    'oily': 'oil_control',
+  };
+  const sanitized = [];
+
+  for (const tag of tags) {
+    const lowerTag = tag.toLowerCase().trim();
+    if (validConcernTags.has(lowerTag)) {
+      sanitized.push(lowerTag);
+    } else if (tagMapping[lowerTag]) {
+      const mapped = tagMapping[lowerTag];
+      if (!sanitized.includes(mapped)) {
+        sanitized.push(mapped);
+      }
+    }
+    // Invalid/unmappable tags are silently dropped
+  }
+
+  return sanitized;
+}
+
+/**
+ * Sanitizes caution_for tags to valid skin_type ENUM values.
+ * Valid skin_type ENUM: 'dry', 'normal', 'oily'
+ * Drops 'sensitive' (not a valid skin_type)
+ */
+function sanitizeCautionFor(tags) {
+  const validSkinTypes = new Set(['dry', 'normal', 'oily']);
+  const sanitized = [];
+
+  for (const tag of tags) {
+    const lowerTag = tag.toLowerCase().trim();
+    if (validSkinTypes.has(lowerTag)) {
+      sanitized.push(lowerTag);
+    }
+    // Invalid tags (e.g., 'sensitive') are silently dropped
+  }
+
+  return sanitized;
+}
+
 function generateProductInsert(product, concerns, index) {
   const norm = normalizeFromRawString(product.ingredients_raw, concerns);
 
@@ -218,11 +266,14 @@ function generateProductInsert(product, concerns, index) {
 }
 
 function generateIngredientInsert(ing) {
+  const helpsWith = sanitizeHelpsWith(parseArrayField(ing.helps_with));
+  const cautionFor = sanitizeCautionFor(parseArrayField(ing.caution_for));
+
   const values = [
     `'${escapeSqlString(ing.ingredient_name)}'`,
     formatArrayForSql(parseArrayField(ing.aliases)),
-    formatArrayForSql(parseArrayField(ing.helps_with)),
-    formatArrayForSql(parseArrayField(ing.caution_for)),
+    formatArrayForSql(helpsWith),
+    formatArrayForSql(cautionFor),
     parseBooleanField(ing.is_common_allergen),
     parseBooleanField(ing.is_sensitivity_flag),
     parseBooleanField(ing.is_strong_active),
