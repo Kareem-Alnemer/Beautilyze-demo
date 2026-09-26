@@ -2,7 +2,7 @@
 Configuration settings for the inference server.
 Loaded from environment variables with sensible defaults.
 """
-from typing import List
+from typing import List, Optional
 from pydantic_settings import BaseSettings
 from pydantic import Field
 
@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     host: str = "0.0.0.0"
     port: int = 8000
     reload: bool = True
+
+    # Environment
+    environment: str = Field(default="development", description="development | production")
 
     # Model Configuration
     model_mode: str = Field(default="mock", description="mock | pytorch | onnx")
@@ -35,6 +38,10 @@ class Settings(BaseSettings):
     cors_allow_credentials: bool = False
     cors_allow_methods: List[str] = Field(default=["*"])
     cors_allow_headers: List[str] = Field(default=["*"])
+
+    # Rate Limiting
+    rate_limit_predict: str = Field(default="10/minute", description="Rate limit for prediction endpoints")
+    redis_url: Optional[str] = Field(default=None, description="Redis URL for rate limiting (production)")
 
     # Logging
     log_level: str = "INFO"

@@ -6,11 +6,14 @@ Endpoints:
 - POST /predict/acne-severity: Predict acne severity from image
 """
 import logging
-import numpy as np
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, File, UploadFile, HTTPException, status
+from fastapi import FastAPI, File, UploadFile, HTTPException, status, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from inference_server.config import settings
 from inference_server.schemas.prediction import PredictResponse, HealthResponse
@@ -30,6 +33,28 @@ from inference_server.utils.privacy import ImageDataContext
 logging.basicConfig(level=settings.log_level)
 logger = logging.getLogger(__name__)
 
+# Rate limiter setup
+def rate_limit_key(request: Request) -> str:
+    """
+    Rate limit key function that returns different keys based on the endpoint.
+    - Prediction endpoints (/predict/*) share a common bucket: "predict:<ip>"
+    - Health endpoint (/health) gets a unique key per IP (but will be exempted)
+    """
+    path = request.url.path
+    if path.startswith("/predict/"):
+        return f"predict:{get_remote_address(request)}"
+    # For other endpoints (like /health), use IP-based key
+    return f"other:{get_remote_address(request)}"
+
+
+limiter = Limiter(
+    key_func=rate_limit_key,
+    default_limits=[],
+    application_limits=[settings.rate_limit_predict],
+    storage_uri=settings.redis_url,
+    headers_enabled=True,  # Enable rate limit headers (X-RateLimit-*)
+)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -47,19 +72,46 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS middleware for local development
+# Add rate limit middleware (adds rate limit headers to responses)
+app.add_middleware(SlowAPIMiddleware)
+
+# Attach rate limiter to app state
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Exempt health endpoint from rate limiting
+limiter._exempt_routes.add("inference_server.main.health_check")
+
+# CORS middleware - environment-aware
+if settings.environment == "production":
+    cors_origins = settings.cors_allow_origins
+else:
+    # Development: allow all origins for easier local testing
+    cors_origins = ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_allow_origins,
+    allow_origins=cors_origins,
     allow_credentials=settings.cors_allow_credentials,
     allow_methods=settings.cors_allow_methods,
     allow_headers=settings.cors_allow_headers,
 )
 
 
+# Privacy headers middleware for prediction endpoints
+@app.middleware("http")
+async def privacy_headers_middleware(request: Request, call_next):
+    """Add privacy headers to prediction endpoint responses."""
+    response = await call_next(request)
+    if request.url.path.startswith("/predict/"):
+        response.headers["Cache-Control"] = "no-store, max-age=0, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+    return response
+
+
 @app.get("/health", response_model=HealthResponse)
 async def health_check() -> HealthResponse:
-    """Health check endpoint."""
+    """Health check endpoint (not rate limited)."""
     return HealthResponse(
         status="ok",
         model_mode=settings.model_mode,
@@ -119,13 +171,15 @@ async def _process_prediction(
     responses={
         400: {"description": "Invalid image format or content"},
         413: {"description": "File too large"},
+        429: {"description": "Rate limit exceeded"},
         500: {"description": "Prediction failed"},
     },
 )
-async def predict_skin_type_endpoint(file: UploadFile = File(...)) -> PredictResponse:
+async def predict_skin_type_endpoint(request: Request, file: UploadFile = File(...)) -> PredictResponse:
     """
     Predict skin type from uploaded image.
     Returns label (dry/normal/oily), confidence (0-1), and model_version.
+    Rate limited to 10 requests per minute per IP (shared across prediction endpoints).
     """
     return await _process_prediction(file, predict_skin_type, "skin-type")
 
@@ -136,13 +190,15 @@ async def predict_skin_type_endpoint(file: UploadFile = File(...)) -> PredictRes
     responses={
         400: {"description": "Invalid image format or content"},
         413: {"description": "File too large"},
+        429: {"description": "Rate limit exceeded"},
         500: {"description": "Prediction failed"},
     },
 )
-async def predict_acne_severity_endpoint(file: UploadFile = File(...)) -> PredictResponse:
+async def predict_acne_severity_endpoint(request: Request, file: UploadFile = File(...)) -> PredictResponse:
     """
     Predict acne severity from uploaded image.
     Returns label (mild/moderate/severe), confidence (0-1), and model_version.
+    Rate limited to 10 requests per minute per IP (shared across prediction endpoints).
     """
     return await _process_prediction(file, predict_acne_severity, "acne-severity")
 
