@@ -71,12 +71,9 @@ describe('ProfileSummaryCard', () => {
     expect(mockPush).not.toHaveBeenCalled();
   });
 
-  it('has correct icons for each card', () => {
+  it('shows an explicit profile edit action', () => {
     const { getByText } = render(React.createElement(ProfileSummaryCard));
-
-    expect(getByText('👤')).toBeTruthy();
-    expect(getByText('🔍')).toBeTruthy();
-    expect(getByText('⚠️')).toBeTruthy();
+    expect(getByText('Edit profile')).toBeTruthy();
   });
 
   it('has accessibility label', () => {

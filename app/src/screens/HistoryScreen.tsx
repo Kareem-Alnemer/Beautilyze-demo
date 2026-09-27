@@ -24,10 +24,13 @@ export const HistoryScreen: React.FC = () => {
   const [history, setHistory] = React.useState<ScanHistoryItem[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
+  const generation = React.useRef(0);
   const [error, setError] = React.useState<string | null>(null);
 
   const loadHistory = React.useCallback(async (isRefresh = false) => {
+    const request = ++generation.current;
     if (!userId) {
+      setError(null);
       setHistory([]);
       setLoading(false);
       if (isRefresh) setRefreshing(false);
@@ -35,21 +38,22 @@ export const HistoryScreen: React.FC = () => {
     }
 
     try {
-      if (!isRefresh) setLoading(true);
+      if (!isRefresh) { setLoading(true); setHistory([]); }
+      else setRefreshing(true);
       setError(null);
       const data = await getScanHistory(userId, 50, 0);
-      setHistory(data);
+      if (request === generation.current) setHistory(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load history');
+      if (request === generation.current) setError(err instanceof Error ? err.message : 'Failed to load history');
       // Graceful fallback: keep any existing cached data
     } finally {
-      setLoading(false);
-      if (isRefresh) setRefreshing(false);
+      if (request === generation.current) { setLoading(false); setRefreshing(false); }
     }
   }, [userId]);
 
   React.useEffect(() => {
-    loadHistory(false);
+    void loadHistory(false);
+    return () => { generation.current++; };
   }, [loadHistory]);
 
   const onRefresh = () => {
@@ -67,29 +71,6 @@ export const HistoryScreen: React.FC = () => {
       minute: '2-digit',
       hour12: true,
     });
-  };
-
-  const formatSkinType = (skinType: string): string => {
-    return skinType.charAt(0).toUpperCase() + skinType.slice(1);
-  };
-
-  const formatAcneSeverity = (severity: string): string => {
-    return severity.charAt(0).toUpperCase() + severity.slice(1);
-  };
-
-  const getAcneSeverityColor = (severity: string): string => {
-    switch (severity) {
-      case 'clear':
-        return theme.colors.badge.acneClear;
-      case 'mild':
-        return theme.colors.badge.acneMild;
-      case 'moderate':
-        return theme.colors.badge.acneModerate;
-      case 'severe':
-        return theme.colors.badge.acneSevere;
-      default:
-        return theme.colors.text.tertiary;
-    }
   };
 
   const getVerdictColor = (verdict: string): string => {
@@ -112,22 +93,19 @@ export const HistoryScreen: React.FC = () => {
   const getCompatibilityScore = (factorsJson: ScanHistoryItem['factors_json']): string => {
     const compatFactors = factorsJson?.compatibility_factors ?? [];
     const passed = compatFactors.filter((f) => f.result === 'pass').length;
-    const total = compatFactors.length || 3;
+    if (compatFactors.length !== 3) return 'Compatibility details unavailable';
+    const total = compatFactors.length;
     return `${passed} of ${total} factors matched`;
   };
 
   const renderItem = ({ item }: { item: ScanHistoryItem }) => (
-    <TouchableOpacity
+    <View
       style={styles.historyCard}
       accessibilityLabel={`${item.product.brand} ${item.product.name}, ${formatVerdict(item.verdict)}`}
     >
       {item.product.image_url ? (
         <Image source={{ uri: item.product.image_url }} style={styles.thumbnail} resizeMode="cover" />
-      ) : (
-        <View style={[styles.thumbnail, styles.placeholderThumbnail]}>
-          <Text style={styles.placeholderIcon}>📦</Text>
-        </View>
-      )}
+      ) : null}
       <View style={styles.cardContent}>
         <View style={styles.cardHeader}>
           <Text style={styles.productName}>{item.product.name}</Text>
@@ -138,26 +116,6 @@ export const HistoryScreen: React.FC = () => {
           </View>
         </View>
         <Text style={styles.productBrand}>{item.product.brand}</Text>
-        <View style={styles.badgeRow}>
-          <View style={[styles.badge, { backgroundColor: theme.colors.badge.skinType }]}>
-            <Text style={styles.badgeText}>Skin: {formatSkinType(
-              item.factors_json?.compatibility_factors?.find((f) => f.name === 'skin_type_fit')?.reason?.includes('dry') ? 'Dry' :
-              item.factors_json?.compatibility_factors?.find((f) => f.name === 'skin_type_fit')?.reason?.includes('oily') ? 'Oily' :
-              item.factors_json?.compatibility_factors?.find((f) => f.name === 'skin_type_fit')?.reason?.includes('normal') ? 'Normal' : '—'
-            )}</Text>
-          </View>
-          <View style={[styles.badge, { backgroundColor: getAcneSeverityColor(
-            item.factors_json?.compatibility_factors?.find((f) => f.name === 'acne_fit')?.reason?.includes('severe') ? 'severe' :
-            item.factors_json?.compatibility_factors?.find((f) => f.name === 'acne_fit')?.reason?.includes('moderate') ? 'moderate' :
-            item.factors_json?.compatibility_factors?.find((f) => f.name === 'acne_fit')?.reason?.includes('mild') ? 'mild' : 'clear'
-          ) }]}>
-            <Text style={styles.badgeText}>Acne: {formatAcneSeverity(
-              item.factors_json?.compatibility_factors?.find((f) => f.name === 'acne_fit')?.reason?.includes('severe') ? 'Severe' :
-              item.factors_json?.compatibility_factors?.find((f) => f.name === 'acne_fit')?.reason?.includes('moderate') ? 'Moderate' :
-              item.factors_json?.compatibility_factors?.find((f) => f.name === 'acne_fit')?.reason?.includes('mild') ? 'Mild' : 'Clear'
-            )}</Text>
-          </View>
-        </View>
         <View style={styles.footerRow}>
           <Text style={styles.timestamp}>{formatTimestamp(item.created_at)}</Text>
           <Text style={[styles.scoreText, { color: theme.colors.text.secondary }]}>
@@ -165,7 +123,7 @@ export const HistoryScreen: React.FC = () => {
           </Text>
         </View>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 
   if (loading) {
@@ -197,12 +155,12 @@ export const HistoryScreen: React.FC = () => {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyTitle}>No Scan History Yet</Text>
+          <Text style={styles.emptyTitle}>No Product Checks Yet</Text>
           <Text style={styles.emptyText}>
             Your product checks will appear here.
           </Text>
           <Text style={styles.emptySubtext}>
-            Search a product or scan your skin to get started.
+            Search a product to get started.
           </Text>
         </View>
       </SafeAreaView>
@@ -213,6 +171,7 @@ export const HistoryScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <FlatList
         data={history}
+        ListHeaderComponent={error ? <Text accessibilityRole="alert" style={styles.errorText}>Could not refresh. Showing previously loaded checks.</Text> : null}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
@@ -227,12 +186,12 @@ export const HistoryScreen: React.FC = () => {
         testID="history-flatlist"
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyTitle}>No Scan History Yet</Text>
+            <Text style={styles.emptyTitle}>No Product Checks Yet</Text>
             <Text style={styles.emptyText}>
               Your product checks will appear here.
             </Text>
             <Text style={styles.emptySubtext}>
-              Search a product or scan your skin to get started.
+              Search a product to get started.
             </Text>
           </View>
         }
@@ -242,22 +201,6 @@ export const HistoryScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  badge: {
-    borderRadius: theme.radii.sm,
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing.xs,
-  },
-  badgeRow: {
-    flexDirection: 'row',
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.sm,
-  },
-  badgeText: {
-    color: theme.colors.text.onAccent,
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.xs,
-    fontWeight: theme.typography.weight.medium,
-  },
   cardContent: {
     flex: 1,
     justifyContent: 'space-between',
@@ -319,26 +262,20 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.sm,
   },
   footerRow: {
-    alignItems: 'center',
+    alignItems: 'flex-start',
     borderTopColor: theme.colors.surface.rule,
-    borderTopWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    gap: theme.spacing.xs,
     paddingTop: theme.spacing.xs,
   },
   historyCard: {
     backgroundColor: theme.colors.surface.raised,
     borderColor: theme.colors.surface.rule,
     borderRadius: theme.radii.md,
-    borderWidth: 1,
-    elevation: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     flexDirection: 'row',
     marginBottom: theme.spacing.md,
     padding: theme.spacing.md,
-    shadowColor: theme.colors.text.primary,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
   },
   listContent: {
     paddingBottom: theme.spacing.xxxl,
@@ -356,14 +293,6 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.md,
     marginTop: theme.spacing.md,
-  },
-  placeholderIcon: {
-    fontSize: 24,
-  },
-  placeholderThumbnail: {
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface.rule,
-    justifyContent: 'center',
   },
   productBrand: {
     color: theme.colors.text.secondary,
@@ -398,9 +327,9 @@ const styles = StyleSheet.create({
   },
   thumbnail: {
     borderRadius: theme.radii.sm,
-    height: 60,
+    height: theme.spacing.xxxl,
     marginRight: theme.spacing.md,
-    width: 60,
+    width: theme.spacing.xxxl,
   },
   timestamp: {
     color: theme.colors.text.tertiary,

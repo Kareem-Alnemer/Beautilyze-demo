@@ -42,6 +42,11 @@ describe('splitIngredients', () => {
     const result = splitIngredients('Water , Glycerin , Niacinamide');
     expect(result).toEqual(['Water', 'Glycerin', 'Niacinamide']);
   });
+
+  it('keeps 1,2-Hexanediol as one ingredient', () => {
+    const result = splitIngredients('Water, 1,2-Hexanediol, Glycerin');
+    expect(result).toEqual(['Water', '1,2-Hexanediol', 'Glycerin']);
+  });
 });
 
 describe('normalizeIngredientString', () => {
@@ -66,6 +71,12 @@ describe('normalizeIngredientString', () => {
 
   it('collapses multiple spaces', () => {
     expect(normalizeIngredientString('niacinamide   acid')).toBe('niacinamide acid');
+  });
+
+  it('strips concentration tokens so actives match the lookup', () => {
+    expect(normalizeIngredientString('Benzoyl Peroxide 5.5%')).toBe('benzoyl peroxide');
+    expect(normalizeIngredientString('Adapalene 0.1%')).toBe('adapalene');
+    expect(normalizeIngredientString('Niacinamide Serum 12% Plus Zinc 2%')).toBe('niacinamide serum plus zinc');
   });
 
   it('handles complex example', () => {

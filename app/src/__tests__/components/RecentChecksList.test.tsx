@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { FlatList } from 'react-native';
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { RecentChecksList } from '../../components/RecentChecksList';
 
 // Mock the getRecentChecks API
@@ -74,6 +75,27 @@ describe('RecentChecksList', () => {
     });
   });
 
+  it('renders without a nested VirtualizedList (safe inside parent ScrollViews)', async () => {
+    (getRecentChecks as jest.Mock).mockResolvedValue([
+      {
+        id: 'check-1',
+        product_id: 'prod-1',
+        verdict: 'match',
+        created_at: '2026-09-25T10:00:00Z',
+        product: { id: 'prod-1', name: 'CeraVe Cleanser', brand: 'CeraVe', image_url: null },
+      },
+    ]);
+
+    const { UNSAFE_queryByType, getByText } = render(
+      React.createElement(RecentChecksList, { userId: 'test-user', onCheckSelect: mockOnSelect })
+    );
+
+    await waitFor(() => {
+      expect(getByText('CeraVe Cleanser')).toBeTruthy();
+    });
+    expect(UNSAFE_queryByType(FlatList)).toBeNull();
+  });
+
   it('calls onCheckSelect when check is pressed', async () => {
     const mockChecks = [
       {
@@ -136,5 +158,27 @@ describe('RecentChecksList', () => {
       expect(getByText('Caution')).toBeTruthy();
       expect(getByText('Mismatch')).toBeTruthy();
     });
+  });
+  it('shows an error instead of claiming the history is empty and retries', async () => {
+    (getRecentChecks as jest.Mock).mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce([]);
+    const screen = render(<RecentChecksList userId="owner" onCheckSelect={mockOnSelect} />);
+    await screen.findByText('Could not load recent checks.');
+    expect(screen.queryByText('No recent checks yet')).toBeNull();
+    fireEvent.press(screen.getByText('Retry history'));
+    expect(await screen.findByText('No recent checks yet')).toBeTruthy();
+  });
+
+  it('ignores the previous account response after switching users', async () => {
+    let finishOld!: (rows: unknown[]) => void;
+    (getRecentChecks as jest.Mock).mockImplementationOnce(() => new Promise((resolve) => { finishOld = resolve; }))
+      .mockResolvedValueOnce([]);
+    const screen = render(<RecentChecksList userId="old" onCheckSelect={mockOnSelect} />);
+    screen.rerender(<RecentChecksList userId="new" onCheckSelect={mockOnSelect} />);
+    await screen.findByText('No recent checks yet');
+    await act(async () => { finishOld([{
+      id: 'old', product_id: 'old', verdict: 'match', created_at: '',
+      product: { id: 'old', name: 'Private old check', brand: 'B', image_url: null },
+    }]); });
+    expect(screen.queryByText('Private old check')).toBeNull();
   });
 });

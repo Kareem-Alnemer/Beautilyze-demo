@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, FlatList, Keyboard } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { theme } from '../../theme';
 
 interface ChipManagerProps {
@@ -21,30 +21,19 @@ export const ChipManager: React.FC<ChipManagerProps> = ({
   suggestions = [],
   disabled = false,
 }) => {
-  const { colors, spacing } = theme;
+  const { colors } = theme;
   const [inputText, setInputText] = React.useState('');
   const [showSuggestions, setShowSuggestions] = React.useState(false);
-  const [filteredSuggestions, setFilteredSuggestions] = React.useState<string[]>([]);
-
-  React.useEffect(() => {
-    if (inputText) {
-      const filtered = suggestions
-        .filter((s) => s.toLowerCase().includes(inputText.toLowerCase()))
-        .filter((s) => !items.includes(s));
-      setFilteredSuggestions(filtered);
-      setShowSuggestions(filtered.length > 0);
-    } else {
-      setShowSuggestions(false);
-    }
-  }, [inputText, items, suggestions]);
+  const filteredSuggestions = inputText.trim() ? suggestions
+    .filter((s) => s.toLowerCase().includes(inputText.trim().toLowerCase()))
+    .filter((s) => !items.some((item) => item.trim().toLowerCase() === s.toLowerCase())) : [];
 
   const handleAdd = () => {
-    const trimmed = inputText.trim();
-    if (trimmed && !items.includes(trimmed)) {
+    const trimmed = inputText.trim().toLowerCase();
+    if (!disabled && trimmed && !items.some((item) => item.trim().toLowerCase() === trimmed)) {
       onAdd(trimmed);
       setInputText('');
       setShowSuggestions(false);
-      Keyboard.dismiss();
     }
   };
 
@@ -53,7 +42,9 @@ export const ChipManager: React.FC<ChipManagerProps> = ({
   };
 
   const handleSuggestionPress = (suggestion: string) => {
-    setInputText(suggestion);
+    if (disabled) return;
+    onAdd(suggestion);
+    setInputText('');
     setShowSuggestions(false);
   };
 
@@ -68,6 +59,8 @@ export const ChipManager: React.FC<ChipManagerProps> = ({
             <TouchableOpacity
               onPress={() => handleRemove(item)}
               disabled={disabled}
+              accessibilityRole="button"
+              accessibilityState={{ disabled }}
               accessibilityLabel={`Remove ${item}`}
               style={styles.chipRemove}
             >
@@ -79,15 +72,15 @@ export const ChipManager: React.FC<ChipManagerProps> = ({
 
       <View style={styles.inputWrapper}>
         <TextInput
+          accessibilityLabel={label}
           style={[
             styles.input,
             { color: colors.text.primary, borderColor: colors.surface.rule },
             disabled && styles.inputDisabled,
           ]}
           value={inputText}
-          onChangeText={setInputText}
+          onChangeText={(text) => { setInputText(text); setShowSuggestions(true); }}
           onFocus={() => setShowSuggestions(true)}
-          onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
           placeholder={placeholder}
           editable={!disabled}
           autoComplete="off"
@@ -95,27 +88,26 @@ export const ChipManager: React.FC<ChipManagerProps> = ({
           returnKeyType="done"
           onSubmitEditing={handleAdd}
         />
-        {inputText && !disabled && (
-          <TouchableOpacity onPress={handleAdd} style={styles.addButton}>
+          <TouchableOpacity onPress={handleAdd} style={styles.addButton} accessibilityRole="button" accessibilityLabel={`Add to ${label.toLowerCase()}`} disabled={disabled || !inputText.trim()}>
             <Text style={styles.addButtonText}>Add</Text>
           </TouchableOpacity>
-        )}
       </View>
 
       {showSuggestions && filteredSuggestions.length > 0 && (
         <View style={styles.suggestionsList}>
-          <FlatList
-            data={filteredSuggestions}
-            keyExtractor={(item) => item}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                onPress={() => handleSuggestionPress(item)}
-                style={styles.suggestionItem}
-              >
-                <Text style={[styles.suggestionText, { color: colors.text.primary }]}>{item}</Text>
-              </TouchableOpacity>
-            )}
-          />
+          {/* Short suggestion list: plain map, no virtualization. */}
+          {filteredSuggestions.map((item) => (
+            <TouchableOpacity
+              key={item}
+              accessibilityRole="button"
+              accessibilityLabel={`Add ${item}`}
+              disabled={disabled}
+              onPress={() => handleSuggestionPress(item)}
+              style={styles.suggestionItem}
+            >
+              <Text style={[styles.suggestionText, { color: colors.text.primary }]}>{item}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
       )}
 
@@ -130,32 +122,41 @@ export const ChipManager: React.FC<ChipManagerProps> = ({
 
 const styles = StyleSheet.create({
   addButton: {
+    justifyContent: 'center',
+    minHeight: theme.spacing.xxxl,
     paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing.sm,
   },
   addButtonText: {
-    color: theme.colors.brand.accent,
+    color: theme.colors.text.primary,
+    fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.md,
-    fontWeight: '600',
+    fontWeight: theme.typography.weight.semibold,
   },
   chip: {
     alignItems: 'center',
-    backgroundColor: theme.colors.surface.base,
+    backgroundColor: theme.colors.surface.raised,
     borderRadius: theme.radii.md,
     flexDirection: 'row',
+    maxWidth: '100%',
     paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
   },
   chipRemove: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: theme.spacing.xxxl,
+    minWidth: theme.spacing.xxxl,
     padding: theme.spacing.xs,
   },
   chipRemoveText: {
-    color: theme.colors.brand.accent,
+    color: theme.colors.text.primary,
     fontSize: theme.typography.size.md,
-    fontWeight: 'bold',
+    fontWeight: theme.typography.weight.semibold,
   },
   chipText: {
-    color: theme.colors.brand.accent,
+    color: theme.colors.text.primary,
+    flexShrink: 1,
+    fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.sm,
     marginRight: theme.spacing.sm,
   },
@@ -169,13 +170,16 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   emptyHint: {
+    fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.sm,
     marginTop: theme.spacing.sm,
-    textAlign: 'center',
   },
   input: {
     flex: 1,
+    fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.md,
+    minHeight: theme.spacing.xxxl,
+    minWidth: 0,
     padding: theme.spacing.lg,
   },
   inputDisabled: {
@@ -184,29 +188,33 @@ const styles = StyleSheet.create({
   inputWrapper: {
     alignItems: 'center',
     backgroundColor: theme.colors.surface.raised,
+    borderColor: theme.colors.surface.rule,
     borderRadius: theme.radii.md,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     flexDirection: 'row',
     paddingHorizontal: theme.spacing.md,
   },
   label: {
+    fontFamily: theme.typography.font.heading,
     fontSize: theme.typography.size.md,
-    fontWeight: '600',
+    fontWeight: theme.typography.weight.semibold,
     marginBottom: theme.spacing.md,
   },
   suggestionItem: {
     borderBottomColor: theme.colors.surface.rule,
-    borderBottomWidth: 1,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    minHeight: theme.spacing.xxxl,
     padding: theme.spacing.lg,
   },
   suggestionText: {
+    fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.md,
   },
   suggestionsList: {
     backgroundColor: theme.colors.surface.raised,
     borderColor: theme.colors.surface.rule,
     borderRadius: theme.radii.md,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     marginTop: theme.spacing.sm,
     overflow: 'hidden',
   },

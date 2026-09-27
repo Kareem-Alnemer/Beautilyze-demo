@@ -12,156 +12,63 @@ interface RecentChecksSectionProps {
 }
 
 export const RecentChecksSection: React.FC<RecentChecksSectionProps> = ({
-  onCheckSelect,
-  onViewAllPress,
-  limit = 3,
+  onCheckSelect, onViewAllPress, limit = 3,
 }) => {
   const router = useRouter();
   const userId = useProfileStore((s) => s.user_id);
-
-  const handleCheckSelect = (check: { product_id: string }) => {
-    if (onCheckSelect) {
-      onCheckSelect(check);
-    } else {
-      router.push(`/verdict/${check.product_id}`);
-    }
-  };
-
-  const handleViewAllPress = () => {
-    if (onViewAllPress) {
-      onViewAllPress();
-    } else {
-      // TODO: Navigate to history screen when implemented
-      // router.push('/history');
-    }
-  };
-
-  const handleScanPress = () => {
-    router.push('/scan');
-  };
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.sectionTitle}>Recent Checks</Text>
-        <TouchableOpacity
-          onPress={handleViewAllPress}
-          style={styles.viewAllButton}
+        <Text accessibilityRole="header" style={styles.sectionTitle}>Recent Checks</Text>
+        {userId && <TouchableOpacity
+          accessibilityRole="button"
           accessibilityLabel="View all recent checks"
+          style={styles.viewAllButton}
+          onPress={onViewAllPress ?? (() => router.push('/history'))}
         >
-          <Text style={styles.viewAllText}>View All</Text>
-        </TouchableOpacity>
+          <Text style={styles.link}>View All</Text>
+        </TouchableOpacity>}
       </View>
-
-      {userId ? (
-        <RecentChecksList
-          userId={userId}
-          onCheckSelect={handleCheckSelect}
-          limit={limit}
-          renderEmpty={() => (
-            <View style={styles.emptyContainer}>
-              <View style={styles.emptyIcon}>
-                <Text style={styles.emptyIconText}>📋</Text>
-              </View>
-              <Text style={styles.emptyTitle}>No checks yet</Text>
-              <Text style={styles.emptyBody}>
-                Scan your skin or search the catalog to start checking products.
-              </Text>
-              <TouchableOpacity
-                onPress={handleScanPress}
-                style={styles.emptyCTA}
-                accessibilityLabel="Scan a product"
-              >
-                <Text style={styles.emptyCTAText}>Scan Product</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        />
-      ) : (
-        <View style={styles.emptyContainer}>
-          <View style={styles.emptyIcon}>
-            <Text style={styles.emptyIconText}>📋</Text>
+      {userId ? <RecentChecksList
+        userId={userId}
+        limit={limit}
+        showHeading={false}
+        onCheckSelect={onCheckSelect ?? ((check) => router.push(`/verdict/${check.product_id}`))}
+        renderEmpty={() => (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyTitle}>No checks yet</Text>
+            <TouchableOpacity accessibilityRole="button" style={styles.viewAllButton} onPress={() => router.push('/search')}>
+              <Text style={styles.link}>Find a product</Text>
+            </TouchableOpacity>
           </View>
-          <Text style={styles.emptyTitle}>No checks yet</Text>
-          <Text style={styles.emptyBody}>
-            Sign in to see your recent product checks.
-          </Text>
-        </View>
-      )}
+        )}
+      /> : <View style={styles.emptyContainer}>
+        <Text style={styles.emptyTitle}>No saved checks on this device.</Text>
+        <Text style={styles.body}>Sign in to see your recent product checks.</Text>
+      </View>}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: theme.spacing.xl,
-  },
-  emptyBody: {
-    color: theme.colors.text.secondary,
-    fontFamily: theme.typography.font.body,
+  body: {
+    color: theme.colors.text.secondary, fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.md,
-    lineHeight: theme.typography.lineHeight.normal * theme.typography.size.md,
-    marginBottom: theme.spacing.xl,
-    maxWidth: '80%',
-    textAlign: 'center',
   },
-  emptyCTA: {
-    backgroundColor: theme.colors.brand.accent,
-    borderRadius: theme.radii.md,
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.md,
-  },
-  emptyCTAText: {
-    color: theme.colors.text.onAccent,
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.md,
-    fontWeight: theme.typography.weight.semibold,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.xxxl,
-  },
-  emptyIcon: {
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface.rule,
-    borderRadius: theme.radii.md,
-    height: 48,
-    justifyContent: 'center',
-    marginBottom: theme.spacing.lg,
-    width: 48,
-  },
-  emptyIconText: {
-    fontSize: 24,
-  },
+  container: { marginBottom: theme.spacing.xl },
+  emptyContainer: { gap: theme.spacing.sm, paddingVertical: theme.spacing.lg },
   emptyTitle: {
-    color: theme.colors.text.primary,
-    fontFamily: theme.typography.font.heading,
-    fontSize: theme.typography.size.lg,
-    fontWeight: theme.typography.weight.semibold,
-    marginBottom: theme.spacing.sm,
-    textAlign: 'center',
+    color: theme.colors.text.secondary, fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.md,
   },
-  header: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: theme.spacing.md,
+  header: { alignItems: 'center', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+  link: {
+    color: theme.colors.text.primary, fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.md, textDecorationLine: 'underline',
   },
   sectionTitle: {
-    color: theme.colors.text.primary,
-    fontFamily: theme.typography.font.heading,
-    fontSize: theme.typography.size.lg,
-    fontWeight: theme.typography.weight.semibold,
+    color: theme.colors.text.primary, fontFamily: theme.typography.font.heading,
+    fontSize: theme.typography.size.lg, fontWeight: theme.typography.weight.semibold,
   },
-  viewAllButton: {
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing.xs,
-  },
-  viewAllText: {
-    color: theme.colors.brand.accent,
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.md,
-    fontWeight: theme.typography.weight.medium,
-  },
+  viewAllButton: { justifyContent: 'center', minHeight: theme.spacing.xxxl, paddingVertical: theme.spacing.sm },
 });

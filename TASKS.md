@@ -19,6 +19,50 @@ acceptance criteria.
 
 ## In flight
 
+- [~] 2026-09-27: Native gallery upload (blueprint 5.1-5.4, 8.3-8.4). Owner approved custom build, dependency alignment, and Android ID com.beautilyze.app. Added local Android/iOS memory-backed gallery upload to existing HTTPS /analyze, validated-result adapter, cancellation/duplicate/late-result handling, and reselect-on-error UI. Installed expo-dev-client and SDK-compatible React DOM/Worklets/Reanimated after the initial ERESOLVE failure was reported and alignment approved. Typecheck passes; 418 app tests / 38 suites pass; lint 0 errors / 38 warnings; module discovery passes on Android/Apple; Android prebuild succeeds. Native compilation and device acceptance are tracked separately below. No claim that upload works in Expo Go. Native camera capture remains disabled. Learning chapter 28 and ADR proposal added.
+- [x] 2026-09-27: Repository navigation pass (blueprint 8.1, 15). Added root/app/docs maps and root-level app commands, clarified route/source/native/generated folders, corrected setup examples, and preserved code paths and historical lessons. Root command wrappers verified with typecheck, lint, and 418 passing tests. This is navigation organization, not the final development-process cleanup. Learning chapter 29 added.
+
+MANUAL_TASK
+Owner: Project team
+Action: Provide a reachable HTTPS inference endpoint; confirm iOS bundle/signing on a Mac; build/install the custom app and run docs/testing/native-upload.md using non-sensitive existing test images.
+Acceptance: Native compilation succeeds; JPEG/PNG upload, cancel, error/reselect, double-tap, and navigation checks pass; no new app-owned image files or image logs; report provider/OS limits separately. Confirm real versus mock model output.
+Status: Pending. No app installed on a phone and no iOS compilation or device privacy verification completed.
+
+### Approved follow-up scope
+
+Native verification update (2026-09-27): `app/android/gradlew.bat :beautilyze-memory-upload:compileDebugKotlin --console=plain` completed successfully in 6m 36s (63 tasks). Expo/Gradle dependency deprecation warnings remain. This compiles the Android module, not a complete installed app; iOS and on-device upload/privacy checks are still pending. Package manifests match both lockfiles and new local documentation links resolve.
+
+- [ ] Discreet Save check action with duplicate/error handling (limited locked-screen change approved).
+- [ ] Preserve guest draft through sign-in and ask before replacing account data.
+- [ ] Improve discovery filters and missing-data explanations using existing catalog facts.
+- [ ] Finish shared UI/icons/fonts and real-device accessibility checks, with dependency approval as needed.
+- [ ] Complete live permission, offline, and user-journey verification; never infer these from mocked tests.
+
+- [~] 2026-09-27: Profile/auth UI polish (blueprint 4.1, 5.3-5.5, 8.7). Implemented shared Button/ChoiceField, readable choice rows, larger ingredient controls, whole-age validation, explicit guest/account save status, profile-load retry, and the approved suggestion render-loop fix. Automated verification: 405 tests / 36 suites pass; typecheck passes; lint 0 errors / 41 warnings; git diff --check passes. Initial test run stalled and was interrupted; rerun passed after approval and fix. Learning chapter 27 and design docs updated. No dependencies, verdict rules, or schema changed in this pass. Native visual acceptance remains pending.
+
+MANUAL_TASK
+Owner: Project team
+Action: Review Profile, onboarding, and sign-in on a small phone with enlarged text and the keyboard open; exercise guest entry, failed account save/retry, and profile-load retry with a test account.
+Acceptance: No clipped labels or hidden actions; radio selection and busy states announced; guest draft clearly session-only; save failure never claims success. Record non-sensitive screenshots. Do not capture face images.
+Status: Pending. Local Expo Metro is available on port 8082; unit tests do not verify native pixel layout. Existing font/icon and SafeAreaView follow-ups remain open.
+
+- [~] 2026-09-26: General enhancement pass (blueprint 3-10). Implemented clearer Home, ordered search/history requests, distinct error states, truthful history facts, auth refresh draft protection, and prediction validation. Verified: typecheck pass; 392 app tests / 35 suites; lint 0 errors / 52 warnings; 70 server tests / 2 warnings; catalog 30 products / 26 concerns / 27 warnings. Learning chapters 24-26 added. Full project remains incomplete: see docs/reviews/2026-09-26-project-review.md. No verdict precedence, locked spec, or new migration changed in this pass.
+
+### Enhancement release gates
+
+- [ ] Wire check saving to a defined user action with duplicate/error handling.
+- [ ] Resolve native memory-only scanning without weakening photo privacy.
+- [ ] Finish icons, bundled fonts, shared controls, and device visual verification.
+- [x] Add explicit profile save feedback (2026-09-27; automated checks pass).
+- [ ] Complete guest-to-account transition.
+- [ ] Reconcile architecture documentation with existing Zustand through an ADR proposal.
+
+MANUAL_TASK
+Owner: Project team
+Action: Answer the Lucide dependency and memory-only native-build questions; review current migration history on staging; validate with two accounts; test the edited screens on a narrow phone and enlarged text; run the held-out model evaluation.
+Acceptance: Record dependency/build decisions, applied migration versions, ownership and deletion checks, device screenshots, and measured model results. Do not delete database rows or overwrite deployed migrations based on historical task notes alone.
+Status: Pending. Automated tests do not satisfy these release gates.
+
 - [~] 2026-09-26: Approved stabilization and learning corrections. Track acceptance in docs/repair-plan.md. App gates green (typecheck, eslint --quiet, Jest 357 pass; server pytest 70 pass). Remaining release gates need a human: live migrations incl. 005, catalog seed, Expo Go device run, real-photo /analyze.
 
 ---
@@ -151,6 +195,8 @@ acceptance criteria.
 - [x] `catalog/ingredients.csv` with headers
 - [x] First 10 products annotated (with cross-check)
 - [x] 2026-09-26: 20 additional products annotated (catalog now 30 total, validator zero errors, seed regen clean; learning doc 20)
+- [x] 2026-09-26: Audit-first UI stability (nesting audit: RecentChecksList/ProductSearchBar/ChipManager FlatList→map, View All→/history, verdict colors to theme; History/Verdict left intact; §10.2 + locked tokens/composition preserved; 367 tests pass; learning doc 23)
+- [x] 2026-09-26: Guest-mode uuid crash fix (`getRecentChecks`/`getScanHistory` return [] on empty userId instead of querying; new `src/catalog/__tests__/api.test.ts`; 370 tests pass)
 - [x] `scripts/seed-catalog.mjs`
 - [x] `app/src/catalog/normalize.ts`
 - [x] `scripts/validate-catalog.mjs` — Closed-vocab, evidence, and unmatched-threshold checks (run: `node scripts/validate-catalog.mjs`)

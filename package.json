@@ -1,4 +1,15 @@
 {
+  "name": "beautilyze-tools",
+  "private": true,
+  "description": "Repository commands and catalog tooling; the mobile app lives in app/.",
+  "scripts": {
+    "app:start": "npm --prefix app start",
+    "app:dev": "npm --prefix app start -- --dev-client",
+    "app:test": "npm --prefix app test -- --runInBand",
+    "app:typecheck": "npm --prefix app run typecheck",
+    "app:lint": "npm --prefix app run lint",
+    "catalog:validate": "node scripts/validate-catalog.mjs"
+  },
   "dependencies": {
     "csv-parse": "^7.0.2"
   },

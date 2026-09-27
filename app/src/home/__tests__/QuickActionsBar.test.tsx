@@ -16,28 +16,24 @@ describe('QuickActionsBar', () => {
   it('renders both action cards with correct titles', () => {
     const { getByText } = render(React.createElement(QuickActionsBar));
 
-    expect(getByText('Scan Product')).toBeTruthy();
+    expect(getByText('Scan Skin')).toBeTruthy();
     expect(getByText('Search Catalog')).toBeTruthy();
   });
 
-  it('renders both action cards with correct descriptions', () => {
-    const { getByText } = render(React.createElement(QuickActionsBar));
-
-    expect(getByText('Camera + AI analysis for personalized profile')).toBeTruthy();
-    expect(getByText('Browse 30+ verified products and check compatibility')).toBeTruthy();
+  it('does not claim that catalog entries are independently verified', () => {
+    const { queryByText } = render(React.createElement(QuickActionsBar));
+    expect(queryByText(/verified products/)).toBeNull();
   });
 
-  it('has correct icons for each card', () => {
-    const { getByText } = render(React.createElement(QuickActionsBar));
-
-    expect(getByText('📷')).toBeTruthy();
-    expect(getByText('🔍')).toBeTruthy();
+  it('does not describe a face scan as a product scan', () => {
+    const { queryByText } = render(React.createElement(QuickActionsBar));
+    expect(queryByText('Scan Product')).toBeNull();
   });
 
-  it('navigates to /scan when Scan Product is pressed', () => {
+  it('navigates to /scan when Scan Skin is pressed', () => {
     const { getByText } = render(React.createElement(QuickActionsBar));
 
-    fireEvent.press(getByText('Scan Product'));
+    fireEvent.press(getByText('Scan Skin'));
 
     expect(mockPush).toHaveBeenCalledWith('/scan');
   });
@@ -54,7 +50,7 @@ describe('QuickActionsBar', () => {
     const mockOnScanPress = jest.fn();
     const { getByText } = render(React.createElement(QuickActionsBar, { onScanPress: mockOnScanPress }));
 
-    fireEvent.press(getByText('Scan Product'));
+    fireEvent.press(getByText('Scan Skin'));
 
     expect(mockOnScanPress).toHaveBeenCalled();
     expect(mockPush).not.toHaveBeenCalled();
@@ -73,19 +69,17 @@ describe('QuickActionsBar', () => {
   it('has accessibility labels', () => {
     const { getByTestId } = render(React.createElement(QuickActionsBar));
 
-    const scanCard = getByTestId('quick-action-scan-product');
+    const scanCard = getByTestId('quick-action-scan-skin');
     const searchCard = getByTestId('quick-action-search-catalog');
 
-    expect(scanCard.props.accessibilityLabel).toBe('Scan a product with your camera');
+    expect(scanCard.props.accessibilityLabel).toBe('Scan your skin for optional AI estimates');
     expect(searchCard.props.accessibilityLabel).toBe('Search the product catalog');
     expect(scanCard.props.accessibilityRole).toBe('button');
     expect(searchCard.props.accessibilityRole).toBe('button');
   });
 
-  it('shows arrow indicator on each card', () => {
-    const { getAllByText } = render(React.createElement(QuickActionsBar));
-
-    const arrows = getAllByText('→');
-    expect(arrows.length).toBe(2);
+  it('keeps the catalog action before the optional scan action', () => {
+    const { getAllByRole } = render(React.createElement(QuickActionsBar));
+    expect(getAllByRole('button')[0].props.accessibilityLabel).toBe('Search the product catalog');
   });
 });

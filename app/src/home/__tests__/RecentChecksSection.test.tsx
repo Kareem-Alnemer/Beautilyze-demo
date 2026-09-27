@@ -69,27 +69,27 @@ describe('RecentChecksSection', () => {
     const { getByText } = render(React.createElement(RecentChecksSection));
 
     expect(getByText('No checks yet')).toBeTruthy();
-    expect(getByText('Scan your skin or search the catalog to start checking products.')).toBeTruthy();
+    expect(getByText('Find a product')).toBeTruthy();
   });
 
-  it('shows "Scan Product" CTA button in empty state', () => {
+  it('shows "Find a product" CTA button in empty state', () => {
     const { getByText } = render(React.createElement(RecentChecksSection));
 
-    expect(getByText('Scan Product')).toBeTruthy();
+    expect(getByText('Find a product')).toBeTruthy();
   });
 
-  it('navigates to /scan when empty state CTA is pressed', () => {
+  it('navigates to /search when empty state CTA is pressed', () => {
     const { getByText } = render(React.createElement(RecentChecksSection));
 
-    fireEvent.press(getByText('Scan Product'));
+    fireEvent.press(getByText('Find a product'));
 
-    expect(mockPush).toHaveBeenCalledWith('/scan');
+    expect(mockPush).toHaveBeenCalledWith('/search');
   });
 
-  it('shows empty icon', () => {
+  it('opens the existing history route from View All', () => {
     const { getByText } = render(React.createElement(RecentChecksSection));
-
-    expect(getByText('📋')).toBeTruthy();
+    fireEvent.press(getByText('View All'));
+    expect(mockPush).toHaveBeenCalledWith('/history');
   });
 
   it('calls onViewAllPress when View All is pressed', () => {

@@ -1,5 +1,28 @@
 # Scan Screen — Design Specification
 
+## Current Native Upload Amendment (2026-09-27)
+
+This amendment supersedes the older gallery/retry and photo-preview details
+below. Owner approved a custom native build without weakening blueprint 8.4.
+
+- Native gallery selection uses the local `memory-upload` module, not Expo's
+  cache-file picker. Expo Go displays a custom-build-required error.
+- Gallery selection does not require camera permission. Selection cancellation
+  returns to the previous permission/camera entry state without an error.
+- The native module sends JPEG/PNG bytes, at most the existing server limit of
+  5 MiB, to HTTPS `/analyze`. Only validated predictions reach JavaScript.
+- No selected-photo preview is displayed. No photo path is retained for native
+  retry. Error state offers "Choose photo again" and the existing manual path.
+- Native camera capture remains unavailable; this change repairs gallery upload,
+  not camera capture. Web capture behavior remains separate.
+- Android network waits are bounded at 60 seconds per connect/read operation;
+  iOS uses URLSession request timeout defaults. Neither is a hard total picker
+  deadline. OS/provider loading may take longer or be cancelled by the user.
+- Native compilation and device filesystem/log verification are release gates.
+
+Historical details below that mention image previews, percentage confidence,
+emoji, or retained native image URIs are not implementation requirements.
+
 **Status:** Locked for implementation
 **Blueprint sections:** §5.1 (Scan User Flow), §5.3 (Per-Field Parallel Contracts), §5.4 (Confidence Threshold & UI Behavior), §10.2 (Terminology Discipline)
 

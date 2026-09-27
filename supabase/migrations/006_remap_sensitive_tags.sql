@@ -1,5 +1,5 @@
 -- Migration 006: remap 'sensitive' out of skin_type_tags
--- Run order: 6th (after 005_save_profile.sql)
+-- Run order: 6th (after 005_profile_integrity.sql)
 --
 -- Blueprint §7.1: 'sensitivity' is a concern tag, not a skin type, and the
 -- skin_type ENUM ('dry', 'normal', 'oily') has no 'sensitive' value.

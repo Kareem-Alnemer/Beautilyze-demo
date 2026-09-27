@@ -141,4 +141,26 @@ describe('Inference API Client', () => {
       expect(result.timestamp).toBeDefined();
     });
   });
+  it.each([
+    null,
+    {},
+    { label: 'combination', confidence: 0.8, model_version: 'v1' },
+    { label: 'oily', confidence: 80, model_version: 'v1' },
+    { label: 'oily', confidence: -0.1, model_version: 'v1' },
+    { label: 'oily', confidence: NaN, model_version: 'v1' },
+    { label: 'oily', confidence: '0.8', model_version: 'v1' },
+    { label: 'oily', confidence: 0.8, model_version: '' },
+  ])('rejects malformed skin predictions: %p', async (body) => {
+    (global.fetch as jest.Mock).mockReset()
+      .mockResolvedValueOnce({ blob: async () => new Blob(['test']) })
+      .mockResolvedValueOnce({ ok: true, json: async () => body });
+    await expect(predictSkinType('blob:test')).rejects.toThrow('Invalid prediction response');
+  });
+
+  it('rejects an acne label outside the blueprint contract', async () => {
+    (global.fetch as jest.Mock).mockReset()
+      .mockResolvedValueOnce({ blob: async () => new Blob(['test']) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ label: 'clear', confidence: 0.9, model_version: 'v1' }) });
+    await expect(predictAcneSeverity('blob:test')).rejects.toThrow('Invalid prediction response');
+  });
 });

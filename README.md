@@ -11,6 +11,33 @@ advice.
 
 **Status:** Capstone MVP, in development.
 
+## Start Here
+
+- **Run or test the app:** [app/README.md](app/README.md).
+- **Understand the code:** [project reading map](docs/learning/26-project-reading-map.md).
+- **Find documentation:** [docs/README.md](docs/README.md).
+- **See unfinished work:** [TASKS.md](TASKS.md).
+- **Native gallery upload:** [build and verification guide](docs/testing/native-upload.md).
+
+The two source projects are `app/` and `inference-server/`. Root-level npm
+dependencies serve catalog scripts; they are not a second mobile app.
+`app/app/` contains navigation routes, while `app/src/` contains application code.
+`app/modules/` contains native extensions compiled into custom builds.
+Folders such as `node_modules/`, `.expo/`, `.pytest_cache/`, and `.test-deps/`
+are installed or generated tooling, not source to study or edit.
+
+From the repository root, with dependencies already installed:
+
+```powershell
+npm run app:typecheck
+npm run app:lint
+npm run app:test
+npm run app:dev
+```
+
+`app:dev` starts Metro for a custom development build. It does not build or
+install the phone app. Expo Go cannot load the native gallery-upload module.
+
 ---
 
 ## What's in this repo
@@ -36,16 +63,15 @@ advice.
 - Node.js 20+
 - Python 3.11+
 - `uv` (Python package manager)
-- An Expo Go app on a phone, or an emulator
+- A BeautiLyze development build on a phone or emulator (Expo Go cannot run the custom uploader)
 - A Supabase project (free tier is fine)
 
 ### Setup
 
 1. Clone the repo.
 2. Copy `.env.example` to `.env` and fill in the values.
-3. Install app dependencies:
-       cd app
-       pnpm install
+3. Install app dependencies using the committed npm lockfile:
+       npm --prefix app ci
 4. Install server dependencies:
        cd inference-server
        uv sync
@@ -56,13 +82,14 @@ advice.
 
 Terminal 1 — inference server:
     cd inference-server
-    uv run uvicorn main:app --reload
+    uv run uvicorn inference_server.main:app --reload
 
 Terminal 2 — mobile app:
     cd app
-    pnpm start
+    npm start -- --dev-client
 
-Scan the QR code with Expo Go.
+Open the installed BeautiLyze development build. Expo Go remains useful for
+non-native flows, but cannot exercise the custom gallery upload.
 
 ---
 
@@ -84,7 +111,7 @@ Read `AGENTS.md` first. It's the contract.
 
 ## Tests
 
-    cd app && pnpm test
+    npm run app:test
     cd inference-server && pytest
 
 ---

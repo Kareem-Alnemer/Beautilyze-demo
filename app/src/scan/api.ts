@@ -12,13 +12,23 @@ import { PredictResponse, ScanResult } from './types';
  * Uses EXPO_PUBLIC_INFERENCE_SERVER_URL with fallback to localhost.
  */
 function getInferenceServerUrl(): string {
-  // In Expo, process.env is not available at runtime.
-  // Use Constants.expoConfig.extra or fallback.
-  // For now, use a simple fallback. In production, this would come from app.config.js
+  // Expo substitutes statically referenced EXPO_PUBLIC variables at build time.
   return process.env.EXPO_PUBLIC_INFERENCE_SERVER_URL || 'http://localhost:8000';
 }
 
 const INFERENCE_SERVER_URL = getInferenceServerUrl();
+
+export function validatePrediction(value: unknown, labels: readonly PredictResponse['label'][]): PredictResponse {
+  if (typeof value !== 'object' || value === null) throw new Error('Invalid prediction response');
+  const record = value as Record<string, unknown>;
+  if (typeof record.label !== 'string' || !labels.some((label) => label === record.label) ||
+      typeof record.confidence !== 'number' || !Number.isFinite(record.confidence) ||
+      record.confidence < 0 || record.confidence > 1 ||
+      typeof record.model_version !== 'string' || !record.model_version.trim()) {
+    throw new Error('Invalid prediction response');
+  }
+  return { label: record.label as PredictResponse['label'], confidence: record.confidence, model_version: record.model_version };
+}
 
 /**
  * Convert a local file URI to a Blob for FormData upload.
@@ -53,7 +63,7 @@ export async function predictSkinType(imageUri: string): Promise<PredictResponse
     );
   }
 
-  return response.json();
+  return validatePrediction(await response.json(), ['dry', 'normal', 'oily']);
 }
 
 /**
@@ -80,7 +90,7 @@ export async function predictAcneSeverity(imageUri: string): Promise<PredictResp
     );
   }
 
-  return response.json();
+  return validatePrediction(await response.json(), ['mild', 'moderate', 'severe']);
 }
 
 /**

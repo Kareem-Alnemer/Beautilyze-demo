@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, StyleSheet } from 'react-native';
 import { theme } from '../../theme';
 
 interface AgeInputProps {
@@ -19,7 +19,7 @@ export const AgeInput: React.FC<AgeInputProps> = ({
   min = 13,
   max = 100,
 }) => {
-  const { colors, spacing } = theme;
+  const { colors } = theme;
   const [text, setText] = React.useState(value?.toString() || '');
 
   React.useEffect(() => {
@@ -33,7 +33,7 @@ export const AgeInput: React.FC<AgeInputProps> = ({
       return;
     }
     const num = Number(newText);
-    if (!isNaN(num) && num >= min && num <= max) {
+    if (/^\d+$/.test(newText) && Number.isInteger(num) && num >= min && num <= max) {
       onChange(num);
     }
   };
@@ -43,7 +43,7 @@ export const AgeInput: React.FC<AgeInputProps> = ({
       onChange(null);
     } else {
       const num = Number(text);
-      if (!isNaN(num) && num >= min && num <= max) {
+      if (/^\d+$/.test(text) && Number.isInteger(num) && num >= min && num <= max) {
         onChange(num);
       } else {
         // Reset to last valid value
@@ -58,6 +58,7 @@ export const AgeInput: React.FC<AgeInputProps> = ({
       <Text style={[styles.label, { color: colors.text.primary }]}>{label}</Text>
       <View style={styles.inputWrapper}>
         <TextInput
+          accessibilityLabel={label}
           style={[
             styles.input,
             { color: colors.text.primary, borderColor: colors.surface.rule },
@@ -69,20 +70,14 @@ export const AgeInput: React.FC<AgeInputProps> = ({
           keyboardType="numeric"
           placeholder={`Enter age (${min}-${max})`}
           editable={!disabled}
-          maxLength={3}
           autoComplete="off"
           textContentType="none"
         />
         <Text style={[styles.unit, { color: colors.text.secondary }]}>years</Text>
       </View>
-      {value !== null && (
-        <Text style={[styles.hint, { color: colors.text.secondary }]}>
-          Age {value} is within the valid range ({min}-{max})
-        </Text>
-      )}
-      {text && (Number(text) < min || Number(text) > max) && (
-        <Text style={[styles.error, { color: colors.verdict.mismatch }]}>
-          Age must be between {min} and {max}
+      {text !== '' && (!/^\d+$/.test(text) || !Number.isInteger(Number(text)) || Number(text) < min || Number(text) > max) && (
+        <Text accessibilityRole="alert" style={[styles.error, { color: colors.verdict.mismatch }]}>
+          Enter a whole number between {min} and {max}.
         </Text>
       )}
     </View>
@@ -94,18 +89,16 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   error: {
-    fontSize: theme.typography.size.sm,
-    marginTop: theme.spacing.sm,
-  },
-  hint: {
+    fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.sm,
     marginTop: theme.spacing.sm,
   },
   input: {
     flex: 1,
+    fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.lg,
+    minHeight: theme.spacing.xxxl,
     padding: theme.spacing.lg,
-    textAlign: 'center',
   },
   inputDisabled: {
     backgroundColor: theme.colors.surface.base,
@@ -113,16 +106,19 @@ const styles = StyleSheet.create({
   inputWrapper: {
     alignItems: 'center',
     backgroundColor: theme.colors.surface.raised,
+    borderColor: theme.colors.surface.rule,
     borderRadius: theme.radii.md,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     flexDirection: 'row',
   },
   label: {
+    fontFamily: theme.typography.font.heading,
     fontSize: theme.typography.size.md,
-    fontWeight: '600',
+    fontWeight: theme.typography.weight.semibold,
     marginBottom: theme.spacing.md,
   },
   unit: {
+    fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.md,
     paddingRight: theme.spacing.lg,
   },

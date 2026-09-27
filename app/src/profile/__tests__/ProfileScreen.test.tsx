@@ -5,6 +5,7 @@ import { useProfileStore } from '../store';
 
 // Mock the store
 const mockStoreState = {
+  user_id: 'owner' as string | null,
   user_skin_type: null,
   user_acne_severity: null,
   age: null,
@@ -91,6 +92,7 @@ jest.mock('../components/AgeInput', () => {
   return {
     AgeInput: ({ value, onChange, label, disabled }: Record<string, any>) =>
       React.createElement('View', { testID: "age-input", accessibilityLabel: label },
+        React.createElement('Text', null, label),
         React.createElement('Text', null, `${label}: ${value || 'Not set'}`),
         React.createElement('TextInput', {
           testID: "age-text-input",
@@ -162,6 +164,7 @@ jest.mock('../components/AIOverrideBanner', () => {
 
 describe('ProfileScreen', () => {
   const mockStore = {
+    user_id: 'owner',
     user_skin_type: null,
     user_acne_severity: null,
     age: null,
@@ -367,5 +370,21 @@ describe('ProfileScreen', () => {
     await waitFor(() => {
       expect(mockStore.persistToSupabase).toHaveBeenCalled();
     });
+  });
+
+  it('shows a guest draft without pretending it can save to an account', () => {
+    mockStoreState.user_id = null;
+    const screen = render(<ProfileScreen />);
+    expect(screen.getByText('Guest profile')).toBeTruthy();
+    expect(screen.queryByText('Save Profile')).toBeNull();
+    expect(screen.queryByText('Sign out')).toBeNull();
+  });
+
+  it('announces a failed save and keeps the form available to retry', async () => {
+    mockStore.persistToSupabase.mockRejectedValueOnce(new Error('offline'));
+    const screen = render(<ProfileScreen />);
+    fireEvent.press(screen.getByRole('button', { name: 'Save profile' }));
+    expect(await screen.findByText('Could not save your profile. Your changes are still available here.')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Save profile' }).props.accessibilityState.disabled).toBe(false);
   });
 });

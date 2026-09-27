@@ -140,7 +140,7 @@ describe('HistoryScreen', () => {
     mockProfileStore.user_id = 'test-user';
   });
 
-  it('renders loading state initially', () => {
+  it('renders loading state initially', async () => {
     let resolveFn: (value: unknown) => void;
     const promise = new Promise((resolve) => {
       resolveFn = resolve;
@@ -151,7 +151,7 @@ describe('HistoryScreen', () => {
 
     expect(getByText('Loading history...')).toBeTruthy();
 
-    act(() => {
+    await act(async () => {
       resolveFn!(mockHistoryData);
     });
   });
@@ -163,11 +163,11 @@ describe('HistoryScreen', () => {
     const { getByText } = render(React.createElement(HistoryScreen));
 
     await waitFor(() => {
-      expect(getByText('No Scan History Yet')).toBeTruthy();
+      expect(getByText('No Product Checks Yet')).toBeTruthy();
     });
 
     expect(getByText('Your product checks will appear here.')).toBeTruthy();
-    expect(getByText('Search a product or scan your skin to get started.')).toBeTruthy();
+    expect(getByText('Search a product to get started.')).toBeTruthy();
   });
 
   it('renders empty state when user is not authenticated', async () => {
@@ -176,7 +176,7 @@ describe('HistoryScreen', () => {
     const { getByText } = render(React.createElement(HistoryScreen));
 
     await waitFor(() => {
-      expect(getByText('No Scan History Yet')).toBeTruthy();
+      expect(getByText('No Product Checks Yet')).toBeTruthy();
     });
   });
 
@@ -213,20 +213,11 @@ describe('HistoryScreen', () => {
     expect(getByText('1 of 3 factors matched')).toBeTruthy(); // mismatch
   });
 
-  it('renders skin type and acne severity badges', async () => {
-    const { getByText, getAllByText } = render(React.createElement(HistoryScreen));
-
-    await waitFor(() => {
-      expect(getByText('Foaming Facial Cleanser')).toBeTruthy();
-    });
-
-    // Badges should be present (text includes "Skin:" and "Acne:")
-    // The badge text is rendered inside the badge component
-    // We verify the badge content by checking for the label prefixes
-    const skinBadges = getAllByText(/Skin:/);
-    const acneBadges = getAllByText(/Acne:/);
-    expect(skinBadges.length).toBeGreaterThan(0);
-    expect(acneBadges.length).toBeGreaterThan(0);
+  it('never infers personal skin or acne values from explanation text', async () => {
+    const screen = render(<HistoryScreen />);
+    await screen.findByText('Foaming Facial Cleanser');
+    expect(screen.queryByText(/Skin:/)).toBeNull();
+    expect(screen.queryByText(/Acne:/)).toBeNull();
   });
 
   it('triggers pull-to-refresh and reloads data', async () => {
@@ -291,8 +282,8 @@ describe('HistoryScreen', () => {
       });
     }
 
-    // Should still show the cached data (not the error state)
     expect(getByText('Foaming Facial Cleanser')).toBeTruthy();
+    expect(getByText('Could not refresh. Showing previously loaded checks.')).toBeTruthy();
   });
 
   it('renders placeholder thumbnail when product has no image', async () => {
@@ -318,5 +309,25 @@ describe('HistoryScreen', () => {
     // The exact format depends on locale, but should contain these patterns
     const timestampTexts = getAllByText(/Sep \d+, 2026 • \d+:\d+ [AP]M/);
     expect(timestampTexts.length).toBeGreaterThan(0);
+  });
+  it('discards a response after the account signs out', async () => {
+    let finish!: (rows: typeof mockHistoryData) => void;
+    mockGetScanHistory.mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
+    const screen = render(<HistoryScreen />);
+    mockProfileStore.user_id = null;
+    screen.rerender(<HistoryScreen />);
+    await screen.findByText('No Product Checks Yet');
+    await act(async () => { finish(mockHistoryData); });
+    expect(screen.queryByText('Foaming Facial Cleanser')).toBeNull();
+  });
+
+  it('does not claim zero matched factors when saved details are missing', async () => {
+    mockGetScanHistory.mockResolvedValueOnce([{
+      ...mockHistoryData[0],
+      factors_json: { hard_constraints: [], compatibility_factors: [] },
+    }]);
+    const screen = render(<HistoryScreen />);
+    expect(await screen.findByText('Compatibility details unavailable')).toBeTruthy();
+    expect(screen.queryByText('0 of 3 factors matched')).toBeNull();
   });
 });

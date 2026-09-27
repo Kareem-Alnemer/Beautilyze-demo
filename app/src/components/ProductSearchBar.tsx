@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, TextInput, FlatList, TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet, ActivityIndicator, Image } from 'react-native';
 import { theme } from '../theme';
 import { searchProducts, SearchResult } from '../catalog/api';
 
@@ -21,27 +21,32 @@ export const ProductSearchBar: React.FC<ProductSearchBarProps> = ({
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [error, setError] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   // Debounced search
   useEffect(() => {
+    let active = true;
+    setResults([]);
+    setError(false);
+    setLoading(Boolean(query.trim()));
     const timer = setTimeout(async () => {
       if (!query.trim()) {
-        setResults([]);
         return;
       }
-      setLoading(true);
       try {
         const data = await searchProducts(query);
-        setResults(data);
+        if (active) setResults(data);
       } catch {
-        setResults([]);
+        if (active) setError(true);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     }, 300);
 
-    return () => clearTimeout(timer);
-  }, [query]);
+    // Clearing a timer cannot cancel a request that has already started.
+    return () => { active = false; clearTimeout(timer); };
+  }, [query, attempt]);
 
   const handleSelect = useCallback(
     (product: SearchResult) => {
@@ -56,6 +61,7 @@ export const ProductSearchBar: React.FC<ProductSearchBarProps> = ({
   const renderItem = ({ item }: { item: SearchResult }) => (
     <TouchableOpacity
       style={styles.resultItem}
+      accessibilityRole="button"
       onPress={() => handleSelect(item)}
       accessibilityLabel={`${item.brand} ${item.name}`}
     >
@@ -67,11 +73,7 @@ export const ProductSearchBar: React.FC<ProductSearchBarProps> = ({
             resizeMode="cover"
           />
         </View>
-      ) : (
-        <View style={[styles.thumbnailContainer, styles.placeholderThumbnail]}>
-          <Text style={styles.placeholderIcon}>📦</Text>
-        </View>
-      )}
+      ) : null}
       <View style={styles.resultInfo}>
         <Text style={styles.resultName}>{item.name}</Text>
         <Text style={styles.resultBrand}>{item.brand}</Text>
@@ -81,7 +83,9 @@ export const ProductSearchBar: React.FC<ProductSearchBarProps> = ({
 
   return (
     <View style={styles.container}>
+      <Text style={styles.label}>Product or brand</Text>
       <TextInput
+        accessibilityLabel="Product or brand"
         style={styles.input}
         placeholder={placeholder}
         value={query}
@@ -90,33 +94,36 @@ export const ProductSearchBar: React.FC<ProductSearchBarProps> = ({
           setShowResults(true);
         }}
         onFocus={() => setShowResults(true)}
-        onBlur={() => setTimeout(() => setShowResults(false), 200)}
         placeholderTextColor={theme.colors.text.tertiary}
         autoCapitalize="none"
         autoCorrect={false}
       />
       {loading && <ActivityIndicator style={styles.loading} size="small" color={theme.colors.text.tertiary} />}
-      {showResults && (
+      {showResults && query.trim() !== '' && !loading && (
         <View style={styles.resultsContainer}>
-          <FlatList
-            data={results}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.resultsList}
-            ListEmptyComponent={
+          {/* Bounded dropdown (limit 20): plain map, no virtualization. */}
+          <View style={styles.resultsList}>
+            {results.map((item) => (
+              <View key={item.id}>{renderItem({ item })}</View>
+            ))}
+            {error ? (
+              <View style={styles.emptyState}>
+                <Text accessibilityRole="alert" style={styles.emptyText}>Could not search the catalog.</Text>
+                <TouchableOpacity accessibilityRole="button" style={styles.retryButton} onPress={() => setAttempt((value) => value + 1)}>
+                  <Text style={styles.label}>Retry search</Text>
+                </TouchableOpacity>
+              </View>
+            ) : results.length === 0 && (
               <View style={styles.emptyState}>
                 <Text style={styles.emptyText}>No products found</Text>
               </View>
-            }
-          />
+            )}
+          </View>
         </View>
       )}
     </View>
   );
 };
-
-// Need to import Image
-import { Image } from 'react-native';
 
 const styles = StyleSheet.create({
   container: {
@@ -139,32 +146,33 @@ const styles = StyleSheet.create({
     color: theme.colors.text.primary,
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.md,
+    minHeight: theme.spacing.xxxl,
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
     width: '100%',
   },
-  loading: {
-    marginTop: theme.spacing.sm,
+  label: {
+    color: theme.colors.text.primary,
+    fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.sm,
+    marginBottom: theme.spacing.sm,
   },
-  placeholderIcon: {
-    fontSize: 18,
-  },
-  placeholderThumbnail: {
-    backgroundColor: theme.colors.surface.rule,
-  },
+  loading: { marginTop: theme.spacing.sm },
   resultBrand: {
     color: theme.colors.text.secondary,
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.sm,
     fontWeight: theme.typography.weight.regular,
-    marginTop: 2,
+    marginTop: theme.spacing.xs,
   },
   resultInfo: {
     flex: 1,
+    minWidth: 0,
   },
   resultItem: {
     alignItems: 'center',
     flexDirection: 'row',
+    minHeight: theme.spacing.xxxl,
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
   },
@@ -179,33 +187,24 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.surface.rule,
     borderRadius: theme.radii.md,
     borderWidth: 1,
-    elevation: 2,
-    left: 0,
     marginTop: theme.spacing.xs,
-    position: 'absolute',
-    right: 0,
-    shadowColor: theme.colors.brand.ink,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    top: '100%',
-    zIndex: 10,
   },
   resultsList: {
     paddingVertical: theme.spacing.xs,
   },
+  retryButton: { justifyContent: 'center', minHeight: theme.spacing.xxxl },
   thumbnail: {
-    height: 40,
-    width: 40,
+    height: theme.spacing.xxxl,
+    width: theme.spacing.xxxl,
   },
   thumbnailContainer: {
     alignItems: 'center',
     backgroundColor: theme.colors.surface.rule,
     borderRadius: theme.radii.sm,
-    height: 40,
+    height: theme.spacing.xxxl,
     justifyContent: 'center',
     marginRight: theme.spacing.sm,
     overflow: 'hidden',
-    width: 40,
+    width: theme.spacing.xxxl,
   },
 });

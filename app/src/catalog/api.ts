@@ -97,6 +97,9 @@ export async function getRecentChecks(userId: string, limit = 5): Promise<Array<
   created_at: string;
   product: Pick<Product, 'id' | 'name' | 'brand' | 'image_url'>;
 }>> {
+  // Guests have no user_id: skip the query entirely. Passing '' to
+  // .eq('user_id', ...) makes Postgres cast '' to uuid and throw 22P02.
+  if (!userId?.trim()) return [];
   const { data, error } = await supabase
     .from('checks')
     .select(`
@@ -117,7 +120,7 @@ export async function getRecentChecks(userId: string, limit = 5): Promise<Array<
 
   if (error) {
     console.error('getRecentChecks error:', error);
-    return [];
+    throw new Error('Could not load recent checks');
   }
 
   // Supabase returns product as array due to the join, but it's a single object
@@ -153,6 +156,9 @@ export async function getScanHistory(
   limit = 50,
   offset = 0
 ): Promise<ScanHistoryItem[]> {
+  // Same guest guard as getRecentChecks: empty user_id must short-circuit
+  // to [] instead of reaching Postgres ('' is not a valid uuid).
+  if (!userId?.trim()) return [];
   const { data, error } = await supabase
     .from('checks')
     .select(`

@@ -15,10 +15,7 @@ export const HomeScreen: React.FC = () => {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>Welcome back</Text>
-          <Text style={styles.subtitle}>
-            Check products against your skin profile
-          </Text>
+          <Text accessibilityRole="header" style={styles.title}>BeautiLyze</Text>
         </View>
 
         {/* Profile Summary */}
@@ -46,12 +43,6 @@ const styles = StyleSheet.create({
     paddingBottom: theme.spacing.xxxl,
     paddingHorizontal: theme.spacing.lg,
     paddingTop: theme.spacing.xl,
-  },
-  subtitle: {
-    color: theme.colors.text.secondary,
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.md,
-    lineHeight: theme.typography.lineHeight.normal * theme.typography.size.md,
   },
   title: {
     color: theme.colors.text.primary,

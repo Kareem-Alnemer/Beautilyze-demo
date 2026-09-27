@@ -28,15 +28,17 @@ it silently.
 **Use for:** the single primary action on a screen.
 
 **Variants:**
-- `primary` — coral background, white text. Used once per screen, maximum.
+- `primary` — existing `brand.ink` background, `text.onAccent` text. Used once per screen, maximum. Ink preserves small-label contrast; coral remains the brand accent.
 - `text` — ink text, underlined. Used for secondary actions.
 
-**States:** default, pressed (opacity 0.7), disabled (opacity 0.4).
+**States:** default; pressed (existing secondary-text background for primary);
+disabled or busy (rule surface and secondary text). Busy also prevents presses
+and is announced to assistive technology. No opacity-based text fading.
 
 **Rules:**
 - Only one `primary` per screen.
 - No icon-only buttons except back/close.
-- Minimum height: 44pt.
+- Minimum height: `spacing.xxxl` (48pt); may grow for enlarged text.
 - Label is a verb: "Check product", "Save profile". Not "OK", not "Submit".
 
 **Do not:** use a primary button for "Check another product" on the
@@ -165,6 +167,20 @@ Example:
 - Animate opacity only. No shimmer gradient.
 
 ---
+
+## Implemented Choice Control
+
+`ChoiceField` in `app/src/components/ui/ChoiceField.tsx` renders one radio
+group from a label, current value, and labeled options with descriptions.
+Options are full-width rows with a minimum height of `spacing.xxxl`.
+Selected rows use ink and white plus the word "Selected"; color is not the
+only indication. Text wraps and the row can grow. Disabled options do not fire.
+SkinTypeSelector and AcneSeveritySelector supply domain values; the primitive
+has no profile-store or verdict dependencies.
+
+Implementation status: Button and ChoiceField exist. The other primitives
+described above remain target specifications, not an assertion that their
+files already exist. Font bundling and the icon-family migration remain pending.
 
 ## Domain components
 

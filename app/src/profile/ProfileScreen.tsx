@@ -1,19 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { supabase } from '../lib/supabase';
-import { View, ScrollView, Text, TouchableOpacity, StyleSheet, SafeAreaView, Alert } from 'react-native';
+import { View, ScrollView, Text, StyleSheet, SafeAreaView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { theme } from '../theme';
-import { useProfileStore, selectUserSkinType, selectUserAcneSeverity, selectAIProfile, isAIHighConfidence } from './store';
+import { useProfileStore, selectUserSkinType, selectUserAcneSeverity, selectAIProfile } from './store';
 import { SkinTypeSelector } from './components/SkinTypeSelector';
 import { AcneSeveritySelector } from './components/AcneSeveritySelector';
 import { AgeInput } from './components/AgeInput';
 import { AllergyManager } from './components/AllergyManager';
 import { SensitivityManager } from './components/SensitivityManager';
 import { AIOverrideBanner } from './components/AIOverrideBanner';
-import { SkinType, AcneSeverity } from '../verdict/types';
+import { Button } from '../components/ui/Button';
 
 export const ProfileScreen: React.FC = () => {
-  const { colors, spacing } = theme;
+  const { colors } = theme;
+  const [saving, setSaving] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const [error, setError] = useState('');
+  const userId = useProfileStore((s) => s.user_id);
+  const synced = useProfileStore((s) => s.is_synced);
 
   // Selectors
   const userSkinType = useProfileStore(selectUserSkinType);
@@ -22,8 +27,6 @@ export const ProfileScreen: React.FC = () => {
   const allergies = useProfileStore((s) => s.allergies);
   const sensitivities = useProfileStore((s) => s.sensitivities);
   const aiProfile = useProfileStore(useShallow(selectAIProfile));
-  const isSkinTypeHighConfidence = isAIHighConfidence(useProfileStore.getState(), 'skin_type');
-  const isAcneSeverityHighConfidence = isAIHighConfidence(useProfileStore.getState(), 'acne_severity');
 
   // Actions
   const setUserSkinType = useProfileStore((s) => s.setUserSkinType);
@@ -38,21 +41,35 @@ export const ProfileScreen: React.FC = () => {
   const persistToSupabase = useProfileStore((s) => s.persistToSupabase);
 
   const handleSave = async () => {
+    if (saving || !userId) return;
+    setSaving(true);
+    setError('');
     try {
       await persistToSupabase();
-      Alert.alert('Saved', 'Your profile has been saved.');
-    } catch (error) {
-      Alert.alert('Error', 'Failed to save profile. Please try again.');
-    }
+
+    } catch {
+      setError('Could not save your profile. Your changes are still available here.');
+    } finally { setSaving(false); }
+  };
+
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    setError('');
+    try {
+      const { error: cause } = await supabase.auth.signOut();
+      if (cause) throw cause;
+    } catch { setError('Could not sign out. Please try again.'); }
+    finally { setSigningOut(false); }
   };
 
   const handleReset = () => {
     Alert.alert(
       'Reset Profile',
-      'This will clear all your profile data. Are you sure?',
+      'Clear the fields in this draft? Your account changes only after you save.',
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Reset', style: 'destructive', onPress: () => {
+          setError('');
           useProfileStore.getState().resetProfile();
         }},
       ]
@@ -61,12 +78,13 @@ export const ProfileScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView style={styles.keyboard} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         {/* Header */}
         <View style={styles.header}>
           <Text style={[styles.title, { color: colors.text.primary }]}>Your Profile</Text>
           <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
-            Set your skin profile for personalized product checks
+            {userId ? 'Account profile' : 'Guest profile'}
           </Text>
         </View>
 
@@ -108,7 +126,6 @@ export const ProfileScreen: React.FC = () => {
 
         {/* Age Section */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>Age</Text>
           <AgeInput
             value={age}
             onChange={setAge}
@@ -136,33 +153,20 @@ export const ProfileScreen: React.FC = () => {
           />
         </View>
 
-        {/* Save Button */}
         <View style={styles.saveButtonContainer}>
-          <TouchableOpacity
-            onPress={handleSave}
-            style={[
-              styles.saveButton,
-              { backgroundColor: colors.brand.accent },
-            ]}
-            accessibilityLabel="Save profile"
-          >
-            <Text style={styles.saveButtonText}>Save Profile</Text>
-          </TouchableOpacity>
-        </View>
-
-        <TouchableOpacity onPress={() => { void supabase.auth.signOut(); }} accessibilityLabel="Sign out"><Text>Sign out</Text></TouchableOpacity>
-        {/* Reset Button */}
-        <View style={styles.resetButtonContainer}>
-          <TouchableOpacity
-            onPress={handleReset}
-            style={styles.resetButton}
-          >
-            <Text style={[styles.resetButtonText, { color: colors.text.secondary }]}>
-              Reset Profile
-            </Text>
-          </TouchableOpacity>
+          <Text accessibilityLiveRegion="polite" style={styles.status}>
+            {!userId ? 'Not saved to an account. This draft lasts for this app session.' :
+              saving ? 'Saving your changes...' : synced ? 'All changes saved.' : 'Unsaved changes'}
+          </Text>
+          {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
+          {userId && <Button title={saving ? 'Saving...' : 'Save Profile'} accessibilityLabel="Save profile"
+            busy={saving} disabled={signingOut || synced} onPress={() => { void handleSave(); }} />}
+          <Button title="Reset Profile" variant="text" disabled={saving || signingOut} onPress={handleReset} />
+          {userId && <Button title={signingOut ? 'Signing out...' : 'Sign out'} variant="text"
+            busy={signingOut} disabled={saving} onPress={() => { void handleSignOut(); }} />}
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -172,35 +176,17 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface.base,
     flex: 1,
   },
+  error: {
+    color: theme.colors.verdict.mismatch, fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.md, marginBottom: theme.spacing.sm,
+  },
   header: {
     marginBottom: theme.spacing.xl,
   },
-  resetButton: {
-    alignItems: 'center',
-    paddingVertical: theme.spacing.sm,
-  },
-  resetButtonContainer: {
-    marginBottom: theme.spacing.lg,
-  },
-  resetButtonText: {
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.md,
-    fontWeight: theme.typography.weight.medium,
-  },
-  saveButton: {
-    alignItems: 'center',
-    borderRadius: theme.radii.md,
-    paddingVertical: theme.spacing.md,
-  },
+  keyboard: { flex: 1 },
   saveButtonContainer: {
     marginBottom: theme.spacing.md,
     marginTop: theme.spacing.xl,
-  },
-  saveButtonText: {
-    color: theme.colors.text.onAccent,
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.lg,
-    fontWeight: theme.typography.weight.semibold,
   },
   scrollContent: {
     padding: theme.spacing.lg,
@@ -209,11 +195,9 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: theme.spacing.xl,
   },
-  sectionTitle: {
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.lg,
-    fontWeight: theme.typography.weight.semibold,
-    marginBottom: theme.spacing.sm,
+  status: {
+    color: theme.colors.text.secondary, fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.md, marginBottom: theme.spacing.md,
   },
   subtitle: {
     fontFamily: theme.typography.font.body,

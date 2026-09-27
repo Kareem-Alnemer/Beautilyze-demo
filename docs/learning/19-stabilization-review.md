@@ -2,7 +2,7 @@
 
 **Date:** 2026-09-26
 **Blueprint:** §5–§9 (cross-cutting stabilization per docs/repair-plan.md)
-**Files changed:** app/jest.config.js, app/src/home/QuickActionsBar.tsx, app/src/theme/colors.ts + tokens test + docs/design/tokens.md, app/src/catalog/normalize test + app/src/catalog/api.ts + app/src/catalog/useVerdict.ts (unchanged, verified), app/src/verdict/factors/allergen.ts + sensitivity.ts + tests, app/src/components/* (FactorBreakdownCard, HardConstraintBanner, ScoreBar, Recommendations, DisclaimerBlock), app/src/scan tests + CameraViewport/ScanResultView/VerdictScreen/services/api theme fixes, app/app/(tabs)/_layout.tsx (deleted legacy app/(tabs)/ + app/services/), supabase/migrations/005_save_profile.sql, scripts/validate-catalog.mjs, catalog/README.md, inference-server/inference_server/main.py + config.py + tests + pyproject.toml + .env.example
+**Files changed:** app/jest.config.js, app/src/home/QuickActionsBar.tsx, app/src/theme/colors.ts + tokens test + docs/design/tokens.md, app/src/catalog/normalize test + app/src/catalog/api.ts + app/src/catalog/useVerdict.ts (unchanged, verified), app/src/verdict/factors/allergen.ts + sensitivity.ts + tests, app/src/components/* (FactorBreakdownCard, HardConstraintBanner, ScoreBar, Recommendations, DisclaimerBlock), app/src/scan tests + CameraViewport/ScanResultView/VerdictScreen/services/api theme fixes, app/app/(tabs)/_layout.tsx (deleted legacy app/(tabs)/ + app/services/), scripts/validate-catalog.mjs, catalog/README.md, inference-server/inference_server/main.py + config.py + tests + pyproject.toml + .env.example
 **Prerequisites:** 02-allergen-factor.md, 03-sensitivity-factor.md, 07-verdict-engine-aggregation.md, 08-catalog-pipeline.md, 11-inference-server.md
 
 ## 1. What this task was
@@ -36,7 +36,7 @@ What were the options? Why was this one chosen? What was rejected and why?
 - app/src/theme/colors.ts: added badge palette and surface.transparent/surface.scrim; tokens test and docs/design/tokens.md updated in the same change.
 - app/src/components/*: FactorBreakdownCard uses its index prop (testID), HardConstraintBanner keys by name+index, ScoreBar/Recommendations/AIOverrideBanner/CameraViewport/ScanResultView/services/api use theme tokens.
 - app/app/(tabs)/_layout.tsx: full tab layout inlined; legacy app/(tabs)/ and app/services/ removed.
-- supabase/migrations/005_save_profile.sql: new migration only (no edits in place) adding insert WITH CHECK policies and the atomic save_profile(payload) RPC the app already calls.
+- Atomic profile saves already existed via the tracked `005_profile_integrity.sql` (advisory-locked `save_profile` RPC with role grants, FK cascades, scans policy fix). A duplicate `005_save_profile.sql` drafted during stabilization was removed unapplied; the tracked file is the single 005. No schema edits in place.
 - scripts/validate-catalog.mjs: new validator (closed vocab, evidence present, unmatched warnings); catalog/README.md drift fixed (.mjs names, annotations/ clarified as supplement).
 - inference-server/inference_server/main.py: acne endpoint takes only Request (was Request + UploadFile, which consumed the stream and broke every acne test with "Stream consumed").
 - inference-server/tests/conftest.py + test_endpoints.py: oversized fixture uses noise + padding so it truly exceeds 5MB; oversize assertions match the real "File too large" message.

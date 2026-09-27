@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { theme } from '../theme';
 import { getRecentChecks } from '../catalog/api';
 
@@ -19,6 +19,7 @@ interface RecentCheck {
 interface RecentChecksListProps {
   limit?: number;
   renderEmpty?: () => React.ReactNode;
+  showHeading?: boolean;
   userId: string;
   onCheckSelect: (check: RecentCheck) => void;
 }
@@ -33,24 +34,31 @@ export const RecentChecksList: React.FC<RecentChecksListProps> = ({
   onCheckSelect,
   limit = 5,
   renderEmpty,
+  showHeading = true,
 }) => {
   const [checks, setChecks] = React.useState<RecentCheck[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState(false);
+  const [attempt, setAttempt] = React.useState(0);
 
   React.useEffect(() => {
+    let active = true;
     const loadChecks = async () => {
       setLoading(true);
+      setChecks([]);
+      setError(false);
       try {
         const data = await getRecentChecks(userId, limit);
-        setChecks(data);
+        if (active) setChecks(data);
       } catch {
-        setChecks([]);
+        if (active) setError(true);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
-    loadChecks();
-  }, [userId, limit]);
+    void loadChecks();
+    return () => { active = false; };
+  }, [userId, limit, attempt]);
 
   if (loading) {
     return (
@@ -60,6 +68,14 @@ export const RecentChecksList: React.FC<RecentChecksListProps> = ({
     );
   }
 
+  if (error) return (
+    <View style={styles.emptyContainer}>
+      <Text accessibilityRole="alert" style={styles.emptyText}>Could not load recent checks.</Text>
+      <TouchableOpacity accessibilityRole="button" style={styles.retryButton} onPress={() => setAttempt((value) => value + 1)}>
+        <Text style={styles.emptyText}>Retry history</Text>
+      </TouchableOpacity>
+    </View>
+  );
   if (checks.length === 0 && renderEmpty) return <>{renderEmpty()}</>;
   if (checks.length === 0) {
     return (
@@ -95,15 +111,17 @@ export const RecentChecksList: React.FC<RecentChecksListProps> = ({
     </TouchableOpacity>
   );
 
+  // Bounded list (limit <= 5): plain map, no virtualization.
+  // (A FlatList here would nest a VirtualizedList inside the parent
+  // ScrollView on Search/Home and trigger nesting warnings.)
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>Recent Checks</Text>
-      <FlatList
-        data={checks}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-      />
+      {showHeading && <Text style={styles.sectionTitle}>Recent Checks</Text>}
+      <View style={styles.list}>
+        {checks.map((item) => (
+          <View key={item.id}>{renderItem({ item })}</View>
+        ))}
+      </View>
     </View>
   );
 };
@@ -111,13 +129,13 @@ export const RecentChecksList: React.FC<RecentChecksListProps> = ({
 function getVerdictColor(verdict: string): string {
   switch (verdict) {
     case 'match':
-      return '#3D8B5F';
+      return theme.colors.verdict.match;
     case 'caution':
-      return '#D98C2B';
+      return theme.colors.verdict.caution;
     case 'mismatch':
-      return '#C43F3B';
+      return theme.colors.verdict.mismatch;
     default:
-      return '#6B6259';
+      return theme.colors.verdict.neutral;
   }
 }
 
@@ -169,6 +187,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.xs,
   },
   list: {
+    gap: theme.spacing.sm,
     paddingHorizontal: theme.spacing.lg,
   },
   loadingContainer: {
@@ -188,6 +207,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface.rule,
     justifyContent: 'center',
   },
+  retryButton: { justifyContent: 'center', minHeight: theme.spacing.xxxl },
   sectionTitle: {
     color: theme.colors.text.primary,
     fontFamily: theme.typography.font.body,

@@ -31,15 +31,18 @@ export function splitIngredients(raw: string): string[] {
   let current = '';
   let parenDepth = 0;
 
-  for (const char of raw) {
+  for (let i = 0; i < raw.length; i++) {
+    const char = raw[i];
     if (char === '(') {
       parenDepth++;
       current += char;
     } else if (char === ')') {
       parenDepth = Math.max(0, parenDepth - 1);
       current += char;
-    } else if (char === ',' && parenDepth === 0) {
-      // Split on comma only at top level (not inside parentheses)
+    } else if (char === ',' && parenDepth === 0 && (i === raw.length - 1 || /\s/.test(raw[i + 1]))) {
+      // Split on comma only at top level (not inside parentheses) and only
+      // when it separates items (followed by whitespace or end of string).
+      // This keeps single INCI names like "1,2-Hexanediol" intact.
       const trimmed = current.trim();
       if (trimmed) result.push(trimmed);
       current = '';
@@ -67,6 +70,10 @@ export function normalizeIngredientString(ingredient: string): string {
 
   // Remove parenthetical content (e.g., "(Aqua)", "(5%)")
   normalized = normalized.replace(/\([^)]*\)/g, '').trim();
+
+  // Remove concentration tokens (e.g., "benzoyl peroxide 5.5%" -> "benzoyl peroxide")
+  // so actives match the lookup table instead of missing silently.
+  normalized = normalized.replace(/\b\d+(\.\d+)?\s*%/g, '').trim();
 
   // Remove trailing punctuation
   normalized = normalized.replace(/[.,;]+$/, '').trim();

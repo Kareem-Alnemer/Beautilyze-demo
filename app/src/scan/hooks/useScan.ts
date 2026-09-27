@@ -12,6 +12,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useProfileStore } from '../../profile/store';
 import type { SkinType, AcneSeverity } from '../../verdict/types';
 import { predictBoth } from '../api';
+import { pickAndAnalyzeNative } from '../nativeUpload';
 import {
   ScanState,
   CameraPermissionStatus,
@@ -22,10 +23,9 @@ import {
   UseScanReturn,
 } from '../types';
 
-const CONFIDENCE_THRESHOLD = 0.60;
-
 export function useScan(): UseScanReturn {
   const generation = useRef(0);
+  const picking = useRef(false);
   useEffect(() => () => { generation.current++; }, []);
   const [state, setState] = useState<ScanState>('PERMISSIONS_REQUIRED');
   const [cameraPermission, setCameraPermission] = useState<CameraPermissionStatus>('undetermined');
@@ -44,6 +44,7 @@ export function useScan(): UseScanReturn {
     (async () => {
       const { status } = await Camera.getCameraPermissionsAsync();
       setCameraPermission(status === 'granted' ? 'granted' : status === 'denied' ? 'denied' : 'undetermined');
+      if (generation.current !== 0) return;
       if (status === 'granted') {
         setState('CAMERA_ACTIVE');
       } else {
@@ -68,8 +69,34 @@ export function useScan(): UseScanReturn {
 
   const pickFromGallery = useCallback(async () => {
     if (Platform.OS !== 'web') {
-      setError({ message: 'Photo selection is unavailable in this build. Set your profile manually.' });
-      setState('ERROR_RETRY');
+      if (picking.current) return;
+      picking.current = true;
+      const request = ++generation.current;
+      setCapturedUri(null);
+      setScanResult(null);
+      setError(null);
+      setIsAnalyzing(true);
+      setState('ANALYZING');
+      try {
+        const result = await pickAndAnalyzeNative();
+        if (request !== generation.current) return;
+        if (!result) {
+          setState(cameraPermission === 'granted' ? 'CAMERA_ACTIVE' : 'PERMISSIONS_REQUIRED');
+          return;
+        }
+        setScanResult(result);
+        setSkinTypeEvaluation(evaluateConfidence('skinType', result.skinType));
+        setAcneSeverityEvaluation(evaluateConfidence('acneSeverity', result.acneSeverity));
+        setState('RESULT_REVIEW');
+      } catch (cause) {
+        if (request === generation.current) {
+          setError({ message: cause instanceof Error ? cause.message : 'Photo upload failed. Please choose a photo again.' });
+          setState('ERROR_RETRY');
+        }
+      } finally {
+        picking.current = false;
+        if (request === generation.current) setIsAnalyzing(false);
+      }
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -85,7 +112,7 @@ export function useScan(): UseScanReturn {
       setState('ANALYZING');
       await analyzePhoto(uri);
     }
-  }, []);
+  }, [cameraPermission]);
 
   const analyzePhoto = useCallback(async (uri?: string) => {
     const imageUri = uri || capturedUri;
@@ -121,20 +148,6 @@ export function useScan(): UseScanReturn {
       if (request === generation.current) setIsAnalyzing(false);
     }
   }, [capturedUri]);
-
-  const evaluateConfidence = useCallback(
-    (field: 'skinType' | 'acneSeverity', prediction: PredictResponse): ConfidenceEvaluation => {
-      const isHighConfidence = prediction.confidence >= 0.60;
-      return {
-        field,
-        confidence: prediction.confidence,
-        isHighConfidence,
-        actionLabel: isHighConfidence ? 'Looks right' : 'Accept',
-        noticeText: !isHighConfidence ? 'The model was uncertain about this scan' : undefined,
-      };
-    },
-    []
-  );
 
   const acceptAIInputs = useCallback((field: 'skinType' | 'acneSeverity') => {
     if (!scanResult) return;

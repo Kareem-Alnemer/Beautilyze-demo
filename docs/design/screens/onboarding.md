@@ -87,6 +87,11 @@ Paper background, raised cards, `text.primary/secondary/tertiary`,
 
 ## 8. Acceptance Checklist
 
+2026-09-27 shared-control update: SkinTypeSelector and AcneSeveritySelector now
+use full-width radio rows; AgeInput and ChipManager inherit the Profile input
+improvements. This does not change onboarding field order, required fields,
+submission behavior, or navigation. Existing onboarding tests remain applicable.
+
 - [ ] Route `/onboarding` renders all 5 sections in order
 - [ ] Skin type required; all else optional
 - [ ] Submit writes store, sets + persists flag, navigates to `/`

@@ -46,7 +46,7 @@ jest.mock('../QuickActionsBar', () => {
     QuickActionsBar: () =>
       React.createElement('View', { testID: 'quick-actions-bar' },
         React.createElement('TouchableOpacity', { testID: 'scan-btn', onPress: () => mockPush('/scan') },
-          React.createElement('Text', null, 'Scan Product')
+          React.createElement('Text', null, 'Scan Skin')
         ),
         React.createElement('TouchableOpacity', { testID: 'search-btn', onPress: () => mockPush('/search') },
           React.createElement('Text', null, 'Search Catalog')
@@ -70,11 +70,10 @@ describe('HomeScreen', () => {
     jest.clearAllMocks();
   });
 
-  it('renders header with title and subtitle', () => {
+  it('renders the product name as its heading', () => {
     const { getByText } = render(React.createElement(HomeScreen));
 
-    expect(getByText('Welcome back')).toBeTruthy();
-    expect(getByText('Check products against your skin profile')).toBeTruthy();
+    expect(getByText('BeautiLyze')).toBeTruthy();
   });
 
   it('renders ProfileSummaryCard', () => {
@@ -115,7 +114,7 @@ describe('HomeScreen', () => {
     expect(recentChecks.props.limit).toBe(3);
   });
 
-  it('navigates to /scan when Scan Product is pressed', () => {
+  it('navigates to /scan when Scan Skin is pressed', () => {
     const { getByTestId } = render(React.createElement(HomeScreen));
 
     fireEvent.press(getByTestId('scan-btn'));

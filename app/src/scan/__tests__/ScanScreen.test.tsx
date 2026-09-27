@@ -146,6 +146,15 @@ const createUseScanMock = (overrides = {}) => ({
 });
 
 describe('ScanScreen', () => {
+  it('reopens photo selection after an error when no image is retained', () => {
+    const pick = jest.fn();
+    mockCurrentUseScanMock = createUseScanMock({
+      state: 'ERROR_RETRY', error: { message: 'Upload failed' }, pickFromGallery: pick,
+    });
+    const screen = render(<ScanScreen />);
+    fireEvent.press(screen.getByLabelText('Choose photo again'));
+    expect(pick).toHaveBeenCalledTimes(1);
+  });
   beforeEach(() => {
     jest.clearAllMocks();
     mockCurrentUseScanMock = createUseScanMock();

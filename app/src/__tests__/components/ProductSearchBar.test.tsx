@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { ProductSearchBar } from '../../components/ProductSearchBar';
 
 // Mock the searchProducts API
@@ -94,7 +94,7 @@ describe('ProductSearchBar', () => {
     });
   });
 
-  it('shows placeholder icon when no image_url', async () => {
+  it('keeps product identity readable when no image is available', async () => {
     const mockResults = [
       { id: '1', name: 'Test Product', brand: 'Test Brand', image_url: null, skin_type_tags: [], concern_tags: [] },
     ];
@@ -107,7 +107,7 @@ describe('ProductSearchBar', () => {
     fireEvent.changeText(getByPlaceholderText('Search products...'), 'test');
 
     await waitFor(() => {
-      expect(getByText('📦')).toBeTruthy();
+      expect(getByText('Test Product')).toBeTruthy();
     });
   });
 
@@ -130,5 +130,45 @@ describe('ProductSearchBar', () => {
     // After selection, the input should be cleared (implementation detail)
     // The mock onProductSelect should have been called
     expect(mockOnSelect).toHaveBeenCalled();
+  });
+  it('ignores a response from an older query', async () => {
+    let finishOld!: (rows: unknown[]) => void;
+    (searchProducts as jest.Mock).mockImplementationOnce(() => new Promise((resolve) => { finishOld = resolve; }))
+      .mockResolvedValueOnce([{ id: 'new', name: 'New result', brand: 'B', image_url: null }]);
+    const screen = render(<ProductSearchBar onProductSelect={mockOnSelect} />);
+    fireEvent.changeText(screen.getByLabelText('Product or brand'), 'old');
+    await waitFor(() => expect(searchProducts).toHaveBeenCalledWith('old'));
+    fireEvent.changeText(screen.getByLabelText('Product or brand'), 'new');
+    await screen.findByText('New result');
+    await act(async () => { finishOld([{ id: 'old', name: 'Old result', brand: 'A', image_url: null }]); });
+    expect(screen.queryByText('Old result')).toBeNull();
+    expect(screen.getByText('New result')).toBeTruthy();
+  });
+
+  it('distinguishes a failed request from no matches and supports retry', async () => {
+    (searchProducts as jest.Mock).mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce([]);
+    const screen = render(<ProductSearchBar onProductSelect={mockOnSelect} />);
+    fireEvent.changeText(screen.getByLabelText('Product or brand'), 'cleanser');
+    await screen.findByText('Could not search the catalog.');
+    expect(screen.queryByText('No products found')).toBeNull();
+    fireEvent.press(screen.getByText('Retry search'));
+    expect(await screen.findByText('No products found')).toBeTruthy();
+  });
+
+  it('does not show an empty-results message before entering a query', () => {
+    const screen = render(<ProductSearchBar onProductSelect={mockOnSelect} />);
+    fireEvent(screen.getByLabelText('Product or brand'), 'focus');
+    expect(screen.queryByText('No products found')).toBeNull();
+  });
+
+  it('does not restore old results after the query is cleared', async () => {
+    let finish!: (rows: unknown[]) => void;
+    (searchProducts as jest.Mock).mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
+    const screen = render(<ProductSearchBar onProductSelect={mockOnSelect} />);
+    fireEvent.changeText(screen.getByLabelText('Product or brand'), 'old');
+    await waitFor(() => expect(searchProducts).toHaveBeenCalledWith('old'));
+    fireEvent.changeText(screen.getByLabelText('Product or brand'), '');
+    await act(async () => { finish([{ id: 'old', name: 'Old result', brand: 'A', image_url: null }]); });
+    expect(screen.queryByText('Old result')).toBeNull();
   });
 });

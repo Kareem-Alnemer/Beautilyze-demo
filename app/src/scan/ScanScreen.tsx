@@ -110,10 +110,10 @@ export const ScanScreen: React.FC = () => {
             <View style={styles.errorActions}>
               <TouchableOpacity
                 style={styles.primaryButton}
-                onPress={retryAnalysis}
-                accessibilityLabel="Retry analysis"
+                onPress={capturedUri ? retryAnalysis : pickFromGallery}
+                accessibilityLabel={capturedUri ? 'Retry analysis' : 'Choose photo again'}
               >
-                <Text style={styles.primaryButtonText}>Retry</Text>
+                <Text style={styles.primaryButtonText}>{capturedUri ? 'Retry' : 'Choose photo again'}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.secondaryButton}
