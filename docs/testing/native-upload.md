@@ -48,6 +48,35 @@ npm run ios
 These installation commands are not a claim that a working phone build has
 already been produced. Check TASKS for the latest verification outcome.
 
+## Android APK Installation Without USB Debugging
+
+From `app/android`, run the approved build command:
+
+```powershell
+.\gradlew.bat :app:assembleDebug --console=plain
+```
+
+Only after `BUILD SUCCESSFUL`, use `app/android/app/build/outputs/apk/debug/app-debug.apk`.
+Transfer it to the Android phone through a trusted method such as USB file transfer,
+open it, and follow the installation prompt. If Android requires permission to
+install from the file manager, grant it for this installation and revoke it afterward.
+Do not disable Play Protect. The launcher currently displays the configured name `app`.
+
+Start Metro from `app`:
+
+```powershell
+npx expo start --dev-client --lan --scheme exp+app
+```
+
+Open the installed app on the same trusted Wi-Fi and connect through its development
+launcher. Use the current Metro address, not a previously opened browser page.
+The QR link does not install the APK. Expo Go cannot run the uploader.
+An address uses a colon before the port (`:8081`), not a dot.
+If `/_expo/link?choice=expo-dev-client` returns 404, restart with the explicit
+development-client command and use the fresh link; confirm the custom app is installed.
+
+See [learning chapter 30](../learning/30-android-development-build.md) for the explanation.
+
 ## Automated Checks
 
 From the repository root:

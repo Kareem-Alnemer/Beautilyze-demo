@@ -19,6 +19,14 @@ acceptance criteria.
 
 ## In flight
 
+- [~] 2026-09-27: Android development APK (blueprint 8.1, 8.4). Owner approved the full `:app:assembleDebug` build after confirming Android. Build in progress; TypeScript check passed. Added installation/Metro instructions and learning chapter 30. This is not a production release or device privacy certification.
+
+MANUAL_TASK
+Owner: Project team
+Action: After the APK build succeeds, transfer app/android/app/build/outputs/apk/debug/app-debug.apk to the Android phone, install it, and connect the installed app to Metro using docs/testing/native-upload.md.
+Acceptance: The development launcher opens, the project loads on the phone, and device upload/privacy checks are recorded separately against a reachable HTTPS inference server.
+Status: Pending phone installation and verification.
+
 - [~] 2026-09-27: Native gallery upload (blueprint 5.1-5.4, 8.3-8.4). Owner approved custom build, dependency alignment, and Android ID com.beautilyze.app. Added local Android/iOS memory-backed gallery upload to existing HTTPS /analyze, validated-result adapter, cancellation/duplicate/late-result handling, and reselect-on-error UI. Installed expo-dev-client and SDK-compatible React DOM/Worklets/Reanimated after the initial ERESOLVE failure was reported and alignment approved. Typecheck passes; 418 app tests / 38 suites pass; lint 0 errors / 38 warnings; module discovery passes on Android/Apple; Android prebuild succeeds. Native compilation and device acceptance are tracked separately below. No claim that upload works in Expo Go. Native camera capture remains disabled. Learning chapter 28 and ADR proposal added.
 - [x] 2026-09-27: Repository navigation pass (blueprint 8.1, 15). Added root/app/docs maps and root-level app commands, clarified route/source/native/generated folders, corrected setup examples, and preserved code paths and historical lessons. Root command wrappers verified with typecheck, lint, and 418 passing tests. This is navigation organization, not the final development-process cleanup. Learning chapter 29 added.
 

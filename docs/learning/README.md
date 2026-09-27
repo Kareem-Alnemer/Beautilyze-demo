@@ -48,6 +48,7 @@ team — so that every line of code can be explained and defended.
 | 27 | [27-profile-form-polish.md](27-profile-form-polish.md) | Readable forms, honest save states, and derived-data render loops | 2026-09-27 |
 | 28 | [28-native-gallery-upload.md](28-native-gallery-upload.md) | Native in-memory gallery upload and custom-build boundaries | 2026-09-27 |
 | 29 | [29-repository-navigation.md](29-repository-navigation.md) | Repository maps, root commands, source versus generated files | 2026-09-27 |
+| 30 | [30-android-development-build.md](30-android-development-build.md) | APK installation versus Metro connection and native build limits | 2026-09-27 |
 
 ## Start Here For The Current Code
 
