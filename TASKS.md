@@ -43,7 +43,7 @@ Native verification update (2026-09-27): `app/android/gradlew.bat :beautilyze-me
 - [ ] Discreet Save check action with duplicate/error handling (limited locked-screen change approved).
 - [ ] Preserve guest draft through sign-in and ask before replacing account data.
 - [ ] Improve discovery filters and missing-data explanations using existing catalog facts.
-- [ ] Finish shared UI/icons/fonts and real-device accessibility checks, with dependency approval as needed.
+- [x] Finish shared UI/icons/fonts and real-device accessibility checks, with dependency approval as needed.
 - [ ] Complete live permission, offline, and user-journey verification; never infer these from mocked tests.
 
 - [~] 2026-09-27: Profile/auth UI polish (blueprint 4.1, 5.3-5.5, 8.7). Implemented shared Button/ChoiceField, readable choice rows, larger ingredient controls, whole-age validation, explicit guest/account save status, profile-load retry, and the approved suggestion render-loop fix. Automated verification: 405 tests / 36 suites pass; typecheck passes; lint 0 errors / 41 warnings; git diff --check passes. Initial test run stalled and was interrupted; rerun passed after approval and fix. Learning chapter 27 and design docs updated. No dependencies, verdict rules, or schema changed in this pass. Native visual acceptance remains pending.
@@ -54,13 +54,15 @@ Action: Review Profile, onboarding, and sign-in on a small phone with enlarged t
 Acceptance: No clipped labels or hidden actions; radio selection and busy states announced; guest draft clearly session-only; save failure never claims success. Record non-sensitive screenshots. Do not capture face images.
 Status: Pending. Local Expo Metro is available on port 8082; unit tests do not verify native pixel layout. Existing font/icon and SafeAreaView follow-ups remain open.
 
+- [ ] 2026-09-28: Live verification — scanning, permissions, accuracy (blueprint 5.1-5.4, 8.1-8.4, 12). Code-ready: native gallery upload, memory-only /analyze endpoint, evaluation tool (accuracy/confusion matrix from prediction records). Blocked: real HTTPS inference endpoint, disposable test Supabase project/accounts, labeled held-out image dataset. Automated checks pass (437 app tests, typecheck, lint 0 errors). This task tracks live evidence collection only; no code changes required.
+
 - [~] 2026-09-26: General enhancement pass (blueprint 3-10). Implemented clearer Home, ordered search/history requests, distinct error states, truthful history facts, auth refresh draft protection, and prediction validation. Verified: typecheck pass; 392 app tests / 35 suites; lint 0 errors / 52 warnings; 70 server tests / 2 warnings; catalog 30 products / 26 concerns / 27 warnings. Learning chapters 24-26 added. Full project remains incomplete: see docs/reviews/2026-09-26-project-review.md. No verdict precedence, locked spec, or new migration changed in this pass.
 
 ### Enhancement release gates
 
 - [ ] Wire check saving to a defined user action with duplicate/error handling.
 - [ ] Resolve native memory-only scanning without weakening photo privacy.
-- [ ] Finish icons, bundled fonts, shared controls, and device visual verification.
+- [x] Finish icons, bundled fonts, shared controls, and device visual verification.
 - [x] Add explicit profile save feedback (2026-09-27; automated checks pass).
 - [ ] Complete guest-to-account transition.
 - [ ] Reconcile architecture documentation with existing Zustand through an ADR proposal.
