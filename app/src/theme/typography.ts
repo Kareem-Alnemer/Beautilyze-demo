@@ -3,6 +3,13 @@ export const typography = {
     heading: 'Fraunces',
     body: 'Inter',
   },
+  face: {
+    headingMedium: 'Fraunces_500Medium',
+    headingSemibold: 'Fraunces_600SemiBold',
+    bodyRegular: 'Inter_400Regular',
+    bodyMedium: 'Inter_500Medium',
+    bodySemibold: 'Inter_600SemiBold',
+  },
   weight: {
     regular: 400,
     medium: 500,

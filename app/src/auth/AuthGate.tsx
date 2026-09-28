@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, StyleSheet, SafeAreaView, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, StyleSheet, SafeAreaView, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { Text, TextInput } from '../components/ui/Text';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { useProfileStore } from '../profile/store';
 import { theme } from '../theme';

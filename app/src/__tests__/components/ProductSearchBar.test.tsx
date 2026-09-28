@@ -13,8 +13,38 @@ describe('ProductSearchBar', () => {
   const mockOnSelect = jest.fn();
 
   beforeEach(() => {
+    jest.useFakeTimers();
     jest.clearAllMocks();
     (searchProducts as jest.Mock).mockResolvedValue([]);
+  });
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  });
+
+  it('browses by a filter without requiring product text and clears it', async () => {
+    const screen = render(<ProductSearchBar onProductSelect={mockOnSelect} />);
+    fireEvent.press(screen.getByRole('radio', { name: 'Dry' }));
+    await waitFor(() => expect(searchProducts).toHaveBeenCalledWith('', { skinType: 'dry', concern: undefined }));
+    expect(screen.getByRole('radio', { name: 'Dry' }).props.accessibilityState.checked).toBe(true);
+    fireEvent.press(screen.getByText('Clear filters'));
+    expect(screen.getByRole('radio', { name: 'Any skin type' }).props.accessibilityState.checked).toBe(true);
+    expect(screen.queryByText('No products found')).toBeNull();
+  });
+
+  it('shows missing ingredient data without inventing a clean bill of health', async () => {
+    (searchProducts as jest.Mock).mockResolvedValue([{ id: 'p', name: 'Sparse product', brand: 'Brand', partial_data: true }]);
+    const screen = render(<ProductSearchBar onProductSelect={mockOnSelect} />);
+    fireEvent.press(screen.getByRole('radio', { name: 'Hydration' }));
+    expect(await screen.findByText('Ingredient data incomplete or unavailable.')).toBeTruthy();
+  });
+
+  it('shows the recorded ingredients without adding ingredient claims', async () => {
+    (searchProducts as jest.Mock).mockResolvedValue([{ id: 'p', name: 'Product', brand: 'Brand', partial_data: false, ingredients_raw: 'Aqua, Glycerin' }]);
+    const screen = render(<ProductSearchBar onProductSelect={mockOnSelect} />);
+    fireEvent.press(screen.getByRole('radio', { name: 'Hydration' }));
+    expect(await screen.findByText('Ingredients: Aqua, Glycerin')).toBeTruthy();
+    expect(screen.getByText('Ingredient list available; check the physical label.')).toBeTruthy();
   });
 
   it('renders search input with placeholder', () => {

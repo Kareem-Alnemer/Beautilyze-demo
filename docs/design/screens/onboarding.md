@@ -1,5 +1,16 @@
 # Onboarding Screen — Design Specification
 
+## Current Recovery Behavior (2026-09-28)
+
+This enhancement supersedes the historical automatic-navigation-on-error rule
+below. Keep all five fields and their order. Get started is genuinely disabled
+until skin type is chosen; the shared Button supplies readable contrast and busy
+semantics. On account save failure, do not mark onboarding complete or navigate:
+show Retry save and Continue without saving. The latter explicitly acknowledges
+the unsaved session draft. Only success or that choice sets the completion flag.
+Guest notice states that profile entries are session-only, not persisted on disk.
+The form uses keyboard avoidance and a scroll view; all controls grow with text.
+
 **Status:** Locked for implementation
 **Blueprint sections:** §4.1, §4.2 (should-have onboarding), §5.3, §6.1, §10.2
 **Follows:** `profile.md` field order and primitives (Editorial Honest)

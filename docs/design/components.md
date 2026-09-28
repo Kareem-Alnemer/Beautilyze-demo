@@ -178,7 +178,14 @@ only indication. Text wraps and the row can grow. Disabled options do not fire.
 SkinTypeSelector and AcneSeveritySelector supply domain values; the primitive
 has no profile-store or verdict dependencies.
 
-Implementation status: Button and ChoiceField exist. The other primitives
+Implementation update (2026-09-28): Icon, Text, TextInput, and FontProvider now
+exist alongside Button and ChoiceField. Icon is decorative; surrounding text
+or controls must provide accessible names. Text/TextInput preserve native props
+and refs while resolving theme family/weight to loaded assets or a system fallback.
+FontProvider does not block navigation while assets load. Existing style-based
+text calls remain supported; the proposed variant API is not yet implemented.
+
+Historical implementation status: Button and ChoiceField exist. The other primitives
 described above remain target specifications, not an assertion that their
 files already exist. Font bundling and the icon-family migration remain pending.
 

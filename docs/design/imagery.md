@@ -30,6 +30,11 @@ they come from.
 | Settings | `settings` |
 | Info / disclaimer | `info` |
 | Close | `x` |
+| Home navigation | `home` |
+| Check history | `history` |
+| Expand/collapse existing factor detail | `chevron-down` / `chevron-up` |
+| Switch camera | `switch-camera` |
+| Choose existing photo | `images` |
 
 If a new icon is needed, it is added here first, then to `Icon.tsx`.
 
@@ -113,7 +118,12 @@ If a spot of visual relief is needed, use space, not illustration.
 **Not used:** italic, black weights, condensed, extended.
 
 **Loading:** bundled with the app via `expo-font`, not fetched at runtime.
-Fonts live in `app/src/assets/fonts/`.
+The static asset manifest lives in `app/src/assets/fonts/`; font binaries and
+their OFL licenses come from the installed `@expo-google-fonts/inter` and
+`@expo-google-fonts/fraunces` packages. Metro bundles the selected five faces.
+No font is downloaded by the running app. Text and text inputs resolve the
+requested family/weight through the shared typography wrapper, avoiding
+synthetic bold in place of the supplied medium and semibold faces.
 
 **Fallback:** if a font fails to load, use the system default and log a
 warning. Never crash.

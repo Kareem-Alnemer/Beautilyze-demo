@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, ScrollView, Text, StyleSheet, SafeAreaView } from 'react-native';
+import { View, ScrollView, StyleSheet, SafeAreaView } from 'react-native';
+import { Text } from '../components/ui/Text';
 import { theme } from '../theme';
 import { ProfileSummaryCard } from './ProfileSummaryCard';
 import { QuickActionsBar } from './QuickActionsBar';

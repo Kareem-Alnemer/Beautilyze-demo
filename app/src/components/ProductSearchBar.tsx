@@ -1,7 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet, ActivityIndicator, Image } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, ActivityIndicator, Image } from 'react-native';
+import { TextInput, Text } from './ui/Text';
 import { theme } from '../theme';
 import { searchProducts, SearchResult } from '../catalog/api';
+import type { SkinType, ConcernTag } from '../verdict/types';
+import { Button } from './ui/Button';
+
+const skinOptions: Array<{ value: SkinType; label: string }> = [
+  { value: 'dry', label: 'Dry' }, { value: 'normal', label: 'Normal' }, { value: 'oily', label: 'Oily' },
+];
+const concernOptions: Array<{ value: ConcernTag; label: string }> = [
+  { value: 'acne', label: 'Acne' }, { value: 'oil_control', label: 'Oil control' },
+  { value: 'hydration', label: 'Hydration' }, { value: 'dryness', label: 'Dryness' },
+  { value: 'sensitivity', label: 'Sensitivity' },
+];
 
 interface ProductSearchBarProps {
   onProductSelect: (product: SearchResult) => void;
@@ -23,19 +35,24 @@ export const ProductSearchBar: React.FC<ProductSearchBarProps> = ({
   const [showResults, setShowResults] = useState(false);
   const [error, setError] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  const [skinType, setSkinType] = useState<SkinType>();
+  const [concern, setConcern] = useState<ConcernTag>();
+  const hasSearch = Boolean(query.trim() || skinType || concern);
 
   // Debounced search
   useEffect(() => {
     let active = true;
     setResults([]);
     setError(false);
-    setLoading(Boolean(query.trim()));
+    setLoading(hasSearch);
     const timer = setTimeout(async () => {
-      if (!query.trim()) {
+      if (!hasSearch) {
         return;
       }
       try {
-        const data = await searchProducts(query);
+        const data = skinType || concern
+          ? await searchProducts(query, { skinType, concern })
+          : await searchProducts(query);
         if (active) setResults(data);
       } catch {
         if (active) setError(true);
@@ -46,12 +63,14 @@ export const ProductSearchBar: React.FC<ProductSearchBarProps> = ({
 
     // Clearing a timer cannot cancel a request that has already started.
     return () => { active = false; clearTimeout(timer); };
-  }, [query, attempt]);
+  }, [query, skinType, concern, hasSearch, attempt]);
 
   const handleSelect = useCallback(
     (product: SearchResult) => {
       onProductSelect(product);
       setQuery('');
+      setSkinType(undefined);
+      setConcern(undefined);
       setResults([]);
       setShowResults(false);
     },
@@ -63,7 +82,7 @@ export const ProductSearchBar: React.FC<ProductSearchBarProps> = ({
       style={styles.resultItem}
       accessibilityRole="button"
       onPress={() => handleSelect(item)}
-      accessibilityLabel={`${item.brand} ${item.name}`}
+      accessibilityLabel={`${item.brand} ${item.name}. ${item.partial_data === false && item.ingredients_raw?.trim() ? 'Ingredient list available; check the physical label.' : 'Ingredient data incomplete or unavailable.'}${item.ingredients_raw?.trim() ? ` Ingredients: ${item.ingredients_raw}` : ''}`}
     >
       {item.image_url ? (
         <View style={styles.thumbnailContainer}>
@@ -77,6 +96,14 @@ export const ProductSearchBar: React.FC<ProductSearchBarProps> = ({
       <View style={styles.resultInfo}>
         <Text style={styles.resultName}>{item.name}</Text>
         <Text style={styles.resultBrand}>{item.brand}</Text>
+        <Text style={styles.resultBrand}>
+          {item.partial_data === false && item.ingredients_raw?.trim()
+            ? 'Ingredient list available; check the physical label.'
+            : 'Ingredient data incomplete or unavailable.'}
+        </Text>
+        {item.ingredients_raw?.trim() ? (
+          <Text style={styles.resultBrand}>Ingredients: {item.ingredients_raw}</Text>
+        ) : null}
       </View>
     </TouchableOpacity>
   );
@@ -98,11 +125,39 @@ export const ProductSearchBar: React.FC<ProductSearchBarProps> = ({
         autoCapitalize="none"
         autoCorrect={false}
       />
+      <Text style={styles.filterLabel}>Skin type tag</Text>
+      <View style={styles.filters} accessibilityRole="radiogroup" accessibilityLabel="Skin type tag">
+        {[{ value: undefined, label: 'Any skin type' }, ...skinOptions].map((option) => (
+          <TouchableOpacity key={option.label} accessibilityRole="radio"
+            accessibilityState={{ checked: skinType === option.value }}
+            style={[styles.filter, skinType === option.value && styles.selectedFilter]}
+            onPress={() => { setSkinType(option.value); setShowResults(true); }}>
+            <Text style={[styles.filterText, skinType === option.value && styles.selectedText]}>{option.label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+      <Text style={styles.filterLabel}>Concern tag</Text>
+      <View style={styles.filters} accessibilityRole="radiogroup" accessibilityLabel="Concern tag">
+        {[{ value: undefined, label: 'Any concern' }, ...concernOptions].map((option) => (
+          <TouchableOpacity key={option.label} accessibilityRole="radio"
+            accessibilityState={{ checked: concern === option.value }}
+            style={[styles.filter, concern === option.value && styles.selectedFilter]}
+            onPress={() => { setConcern(option.value); setShowResults(true); }}>
+            <Text style={[styles.filterText, concern === option.value && styles.selectedText]}>{option.label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+      {(skinType || concern) && <Button variant="text" title="Clear filters" onPress={() => {
+        setSkinType(undefined); setConcern(undefined);
+      }} />}
       {loading && <ActivityIndicator style={styles.loading} size="small" color={theme.colors.text.tertiary} />}
-      {showResults && query.trim() !== '' && !loading && (
+      {showResults && hasSearch && !loading && (
         <View style={styles.resultsContainer}>
           {/* Bounded dropdown (limit 20): plain map, no virtualization. */}
           <View style={styles.resultsList}>
+            {!error && results.length > 0 && <Text style={styles.resultBrand}>
+              {results.length === 20 ? 'First 20 results. Refine your search for more specific matches.' : `${results.length} products found`}
+            </Text>}
             {results.map((item) => (
               <View key={item.id}>{renderItem({ item })}</View>
             ))}
@@ -138,6 +193,18 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.md,
   },
+  filter: {
+    backgroundColor: theme.colors.surface.raised, borderRadius: theme.radii.sm,
+    justifyContent: 'center', minHeight: theme.spacing.xxxl,
+    paddingHorizontal: theme.spacing.md, paddingVertical: theme.spacing.sm,
+  },
+  filterLabel: {
+    color: theme.colors.text.primary, fontFamily: theme.typography.font.body,
+    fontSize: theme.typography.size.sm, marginBottom: theme.spacing.sm,
+    marginTop: theme.spacing.md,
+  },
+  filterText: { color: theme.colors.text.primary, fontFamily: theme.typography.font.body, fontSize: theme.typography.size.sm },
+  filters: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm },
   input: {
     backgroundColor: theme.colors.surface.raised,
     borderColor: theme.colors.surface.rule,
@@ -193,6 +260,8 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.xs,
   },
   retryButton: { justifyContent: 'center', minHeight: theme.spacing.xxxl },
+  selectedFilter: { backgroundColor: theme.colors.brand.ink },
+  selectedText: { color: theme.colors.text.onAccent, textDecorationLine: 'underline' },
   thumbnail: {
     height: theme.spacing.xxxl,
     width: theme.spacing.xxxl,

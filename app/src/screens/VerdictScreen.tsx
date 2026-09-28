@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, ScrollView, Text, TouchableOpacity, StyleSheet, SafeAreaView, ActivityIndicator } from 'react-native';
+import { View, ScrollView, TouchableOpacity, StyleSheet, SafeAreaView, ActivityIndicator } from 'react-native';
+import { Text } from '../components/ui/Text';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { theme } from '../theme';
 import { useProfileStore } from '../profile/store';

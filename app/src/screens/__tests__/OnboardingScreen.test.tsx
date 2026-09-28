@@ -114,12 +114,9 @@ describe('OnboardingScreen', () => {
     expect(getByText('Get started')).toBeTruthy();
   });
 
-  it('dims submit until skin type is chosen', () => {
-    const { getByTestId } = render(React.createElement(OnboardingScreen));
-
-    const style = getByTestId('onboarding-submit').props.style;
-    const flat = Array.isArray(style) ? Object.assign({}, ...style.filter(Boolean)) : style;
-    expect(flat.opacity).toBe(0.5);
+  it('disables submit until skin type is chosen', () => {
+    const { getByRole } = render(React.createElement(OnboardingScreen));
+    expect(getByRole('button', { name: 'Get started' }).props.accessibilityState.disabled).toBe(true);
   });
 
   it('forwards skin type selection to the store', () => {
@@ -130,12 +127,11 @@ describe('OnboardingScreen', () => {
     expect(mockOnboardingState.setUserSkinType).toHaveBeenCalledWith('oily');
   });
 
-  it('shows validation notice when submitted without skin type', () => {
+  it('does not submit without a skin type', () => {
     const { getByText } = render(React.createElement(OnboardingScreen));
 
     fireEvent.press(getByText('Get started'));
 
-    expect(getByText('Choose your skin type to continue.')).toBeTruthy();
     expect(mockOnboardingState.setHasCompletedOnboarding).not.toHaveBeenCalled();
   });
 
@@ -164,7 +160,7 @@ describe('OnboardingScreen', () => {
     expect(mockReplace).toHaveBeenCalledWith('/');
   });
 
-  it('shows a sync error but still navigates when the save fails', async () => {
+  it('keeps a save failure visible until the user explicitly continues unsaved', async () => {
     resetState({ user_id: 'user-1', user_skin_type: 'normal' });
     (mockOnboardingState.persistToSupabase as jest.Mock).mockRejectedValueOnce(new Error('Database unavailable'));
     const { getByText } = render(React.createElement(OnboardingScreen));
@@ -172,8 +168,21 @@ describe('OnboardingScreen', () => {
     fireEvent.press(getByText('Get started'));
 
     await waitFor(() => {
-      expect(getByText("We couldn't save to your account. Your entries are kept on this device.")).toBeTruthy();
+      expect(getByText("We couldn't save to your account. Your entries remain in this session. Retry or continue without saving.")).toBeTruthy();
     });
-    expect(mockReplace).toHaveBeenCalledWith('/');
+    expect(mockReplace).not.toHaveBeenCalled();
+    expect(mockOnboardingState.setHasCompletedOnboarding).not.toHaveBeenCalled();
+    fireEvent.press(getByText('Continue without saving'));
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/'));
+  });
+
+  it('retries an offline save before completing onboarding', async () => {
+    resetState({ user_id: 'user-1', user_skin_type: 'normal' });
+    (mockOnboardingState.persistToSupabase as jest.Mock).mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce(undefined);
+    const screen = render(<OnboardingScreen />);
+    fireEvent.press(screen.getByText('Get started'));
+    fireEvent.press(await screen.findByText('Retry save'));
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/'));
+    expect(mockOnboardingState.persistToSupabase).toHaveBeenCalledTimes(2);
   });
 });

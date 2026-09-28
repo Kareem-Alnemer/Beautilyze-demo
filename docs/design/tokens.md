@@ -199,3 +199,10 @@ If a design needs a value not in this file:
 2. Ask the human whether to extend the system.
 3. If yes, add the token here AND to `theme/` in the same change.
 4. If no, use the closest existing token.
+# Bundled Font Faces (2026-09-28)
+
+`typography.face` maps headingMedium/headingSemibold to Fraunces_500Medium and
+Fraunces_600SemiBold, and bodyRegular/bodyMedium/bodySemibold to Inter_400Regular,
+Inter_500Medium, and Inter_600SemiBold. These are the existing specified weights,
+now named explicitly for Expo's asset loader. Shared Text/TextInput use these
+faces only after loading succeeds; otherwise system fonts remain usable.

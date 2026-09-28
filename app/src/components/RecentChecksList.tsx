@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { Text } from './ui/Text';
 import { theme } from '../theme';
 import { getRecentChecks } from '../catalog/api';
 

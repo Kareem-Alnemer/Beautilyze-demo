@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { Text, TextInput } from '../../components/ui/Text';
 import { theme } from '../../theme';
 
 interface AgeInputProps {

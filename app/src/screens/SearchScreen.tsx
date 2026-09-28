@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
-import { View, ScrollView, Text, StyleSheet, SafeAreaView } from 'react-native';
+import { View, ScrollView, StyleSheet, SafeAreaView } from 'react-native';
+import { Text } from '../components/ui/Text';
 import { useRouter } from 'expo-router';
 import { theme } from '../theme';
 import { useProfileStore } from '../profile/store';

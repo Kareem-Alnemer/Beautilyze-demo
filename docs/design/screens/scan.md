@@ -1,5 +1,12 @@
 # Scan Screen — Design Specification
 
+2026-09-28 recovery refinement: native idle states show Choose a photo, the
+gallery action, and the manual path rather than requesting permission for an
+unavailable native camera. Explain that native capture is unavailable. Native
+errors show Choose photo again, never a nonfunctional Retake action. Error and
+entry content scroll on small screens; actions use existing ink contrast and
+minimum 48pt height. This is gallery recovery, not completion of native capture.
+
 ## Current Native Upload Amendment (2026-09-27)
 
 This amendment supersedes the older gallery/retry and photo-preview details

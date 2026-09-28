@@ -35,6 +35,13 @@ const expectedTheme = {
     },
   },
   typography: {
+    face: {
+      headingMedium: 'Fraunces_500Medium',
+      headingSemibold: 'Fraunces_600SemiBold',
+      bodyRegular: 'Inter_400Regular',
+      bodyMedium: 'Inter_500Medium',
+      bodySemibold: 'Inter_600SemiBold',
+    },
     font: {
       heading: 'Fraunces',
       body: 'Inter',

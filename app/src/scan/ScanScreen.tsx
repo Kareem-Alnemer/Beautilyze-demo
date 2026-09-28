@@ -6,12 +6,14 @@
 
 import React from 'react';
 import { useRouter } from 'expo-router';
-import { View, Text, StyleSheet, SafeAreaView, StatusBar, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, SafeAreaView, StatusBar, TouchableOpacity, Platform, ScrollView } from 'react-native';
+import { Text } from '../components/ui/Text';
 import { useScan } from './hooks/useScan';
 import { CameraViewport } from './components/CameraViewport';
 import { AnalysisShimmer } from './components/AnalysisShimmer';
 import { ScanResultView } from './components/ScanResultView';
 import { theme } from '../theme';
+import { Button } from '../components/ui/Button';
 
 export const ScanScreen: React.FC = () => {
   const router = useRouter();
@@ -30,7 +32,6 @@ export const ScanScreen: React.FC = () => {
     acceptAIInputs,
     retakePhoto,
     retryAnalysis,
-    dismissError,
   } = useScan();
 
   // Set status bar style
@@ -40,6 +41,16 @@ export const ScanScreen: React.FC = () => {
   }, []);
 
   const renderContent = () => {
+    if (Platform.OS !== 'web' && (state === 'PERMISSIONS_REQUIRED' || state === 'CAMERA_ACTIVE')) {
+      return <ScrollView contentContainerStyle={styles.permissionContainer}>
+        <Text accessibilityRole="header" style={styles.permissionTitle}>Choose a photo</Text>
+        <Text style={styles.permissionText}>
+          Choose an existing JPEG or PNG. The photo is sent for analysis and is not added to your profile or shown in your results.
+        </Text>
+        <Text style={styles.permissionText}>Camera capture is not available in this build. You can also set every field manually.</Text>
+        <Button title="Choose from Gallery" onPress={pickFromGallery} />
+      </ScrollView>;
+    }
     switch (state) {
       case 'PERMISSIONS_REQUIRED':
         return (
@@ -102,9 +113,9 @@ export const ScanScreen: React.FC = () => {
 
       case 'ERROR_RETRY':
         return (
-          <View style={styles.errorContainer}>
+          <ScrollView contentContainerStyle={styles.errorContainer}>
             <Text style={styles.errorTitle}>Analysis Failed</Text>
-            <Text style={styles.errorMessage}>
+            <Text accessibilityRole="alert" style={styles.errorMessage}>
               {error?.message || 'Unable to analyze your photo. Please try again.'}
             </Text>
             <View style={styles.errorActions}>
@@ -115,15 +126,15 @@ export const ScanScreen: React.FC = () => {
               >
                 <Text style={styles.primaryButtonText}>{capturedUri ? 'Retry' : 'Choose photo again'}</Text>
               </TouchableOpacity>
-              <TouchableOpacity
+              {Platform.OS === 'web' && <TouchableOpacity
                 style={styles.secondaryButton}
                 onPress={retakePhoto}
                 accessibilityLabel="Go back to camera"
               >
                 <Text style={styles.secondaryButtonText}>Retake Photo</Text>
-              </TouchableOpacity>
+              </TouchableOpacity>}
             </View>
-          </View>
+          </ScrollView>
         );
 
       default:
@@ -136,12 +147,10 @@ export const ScanScreen: React.FC = () => {
       <StatusBar barStyle="dark-content" backgroundColor={theme.colors.surface.base} />
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Scan Your Skin</Text>
-        <Text style={styles.headerSubtitle}>Get personalized product recommendations</Text>
+        <Text style={styles.headerSubtitle}>Review AI estimates before adding them to your profile</Text>
       </View>
       {renderContent()}
-      <TouchableOpacity onPress={() => router.push('/profile')} accessibilityLabel="Set profile manually">
-        <Text style={styles.secondaryButtonText}>Set profile manually</Text>
-      </TouchableOpacity>
+      <Button variant="text" title="Set profile manually" onPress={() => router.push('/profile')} />
     </SafeAreaView>
   );
 };
@@ -157,7 +166,7 @@ const styles = StyleSheet.create({
   },
   errorContainer: {
     alignItems: 'center',
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'center',
     padding: theme.spacing.lg,
   },
@@ -195,7 +204,7 @@ const styles = StyleSheet.create({
   },
   permissionContainer: {
     alignItems: 'center',
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'center',
     padding: theme.spacing.lg,
   },
@@ -217,9 +226,10 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     alignItems: 'center',
-    backgroundColor: theme.colors.brand.accent,
+    backgroundColor: theme.colors.brand.ink,
     borderRadius: theme.radii.md,
     marginBottom: theme.spacing.md,
+    minHeight: theme.spacing.xxxl,
     paddingVertical: theme.spacing.md,
     width: '100%',
   },
@@ -235,6 +245,7 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.surface.rule,
     borderRadius: theme.radii.md,
     borderWidth: 1,
+    minHeight: theme.spacing.xxxl,
     paddingVertical: theme.spacing.md,
     width: '100%',
   },

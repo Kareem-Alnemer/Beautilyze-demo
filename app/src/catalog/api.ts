@@ -44,19 +44,31 @@ export interface SearchResult {
   image_url: string | null;
   skin_type_tags: SkinType[];
   concern_tags: ConcernTag[];
+  partial_data?: boolean | null;
+  ingredients_raw?: string | null;
+}
+
+export interface ProductFilters {
+  skinType?: SkinType;
+  concern?: ConcernTag;
 }
 
 /**
  * Search products by name or brand (case-insensitive, partial match).
  * Returns lightweight results for the search list.
  */
-export async function searchProducts(query: string): Promise<SearchResult[]> {
-  if (!query.trim()) return [];
+export async function searchProducts(query: string, filters: ProductFilters = {}): Promise<SearchResult[]> {
+  const term = query.replace(/[,%()\\_]/g, ' ').trim();
+  if (!term && !filters.skinType && !filters.concern) return [];
 
-  const { data, error } = await supabase
+  let request = supabase
     .from('products')
-    .select('id, name, brand, image_url, skin_type_tags, concern_tags')
-    .or(`name.ilike.%${query.replace(/[,%()\\]/g, ' ').trim()}%,brand.ilike.%${query.replace(/[,%()\\]/g, ' ').trim()}%`)
+    .select('id, name, brand, image_url, skin_type_tags, concern_tags, partial_data, ingredients_raw');
+  if (term) request = request.or(`name.ilike.%${term}%,brand.ilike.%${term}%`);
+  // Apply filters before the result limit, so matching products are not hidden.
+  if (filters.skinType) request = request.contains('skin_type_tags', [filters.skinType]);
+  if (filters.concern) request = request.contains('concern_tags', [filters.concern]);
+  const { data, error } = await request
     .order('name', { ascending: true })
     .limit(20);
 

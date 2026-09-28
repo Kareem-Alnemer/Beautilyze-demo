@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import { Platform } from 'react-native';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 
 // Mock expo-router (ScanScreen only uses useRouter for navigation)
@@ -146,6 +147,25 @@ const createUseScanMock = (overrides = {}) => ({
 });
 
 describe('ScanScreen', () => {
+  const originalPlatform = Platform.OS;
+  afterEach(() => Object.defineProperty(Platform, 'OS', { value: originalPlatform, configurable: true }));
+  it('offers Android gallery selection without requesting camera permission', () => {
+    Object.defineProperty(Platform, 'OS', { value: 'android', configurable: true });
+    const screen = render(<ScanScreen />);
+    expect(screen.queryByText('Grant Camera Access')).toBeNull();
+    fireEvent.press(screen.getByText('Choose from Gallery'));
+    expect(mockCurrentUseScanMock.pickFromGallery).toHaveBeenCalledTimes(1);
+    expect(mockCurrentUseScanMock.requestCameraPermission).not.toHaveBeenCalled();
+  });
+
+  it('does not offer an unavailable native retake action after upload failure', () => {
+    Object.defineProperty(Platform, 'OS', { value: 'android', configurable: true });
+    mockCurrentUseScanMock = createUseScanMock({ state: 'ERROR_RETRY', error: { message: 'offline' } });
+    const screen = render(<ScanScreen />);
+    expect(screen.getByLabelText('Choose photo again')).toBeTruthy();
+    expect(screen.queryByText('Retake Photo')).toBeNull();
+    expect(screen.getByText('Set profile manually')).toBeTruthy();
+  });
   it('reopens photo selection after an error when no image is retained', () => {
     const pick = jest.fn();
     mockCurrentUseScanMock = createUseScanMock({
@@ -156,6 +176,7 @@ describe('ScanScreen', () => {
     expect(pick).toHaveBeenCalledTimes(1);
   });
   beforeEach(() => {
+    Object.defineProperty(Platform, 'OS', { value: 'web', configurable: true });
     jest.clearAllMocks();
     mockCurrentUseScanMock = createUseScanMock();
   });

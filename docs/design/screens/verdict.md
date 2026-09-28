@@ -171,3 +171,11 @@ If a task requires changing this screen:
 4. Then the code is updated to match.
 
 This ordering is non-negotiable. The document is the source of truth.
+# Accessibility Refinement (2026-09-28)
+
+The section order, verdict rules, and disclaimer remain unchanged. Existing
+factor rows and hard-constraint rows use the shared Lucide icon family; missing
+data uses an information icon rather than a failure symbol. Expanded reasons
+are no longer clipped to two lines, so narrow screens and larger text retain
+the explanation. Factor controls have the existing 48pt minimum target and
+announce Show/Hide explanation accurately. Typography uses bundled font faces.

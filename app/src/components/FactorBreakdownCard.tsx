@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text } from './ui/Text';
 import { theme } from '../theme';
+import { Icon } from './ui/Icon';
 import { Verdict } from '../verdict/types';
 
 interface FactorBreakdownCardProps {
@@ -48,27 +50,23 @@ export const FactorBreakdownCard: React.FC<FactorBreakdownCardProps> = ({
       <TouchableOpacity
         style={styles.header}
         onPress={() => setExpanded(!expanded)}
-        accessibilityLabel={`${label}, ${resultLabel}. Tap to expand.`}
+        accessibilityLabel={`${label}, ${resultLabel}. ${expanded ? 'Hide' : 'Show'} explanation.`}
         accessibilityRole="button"
         accessibilityState={{ expanded }}
       >
         <View style={styles.iconContainer}>
-          <Text style={[styles.icon, { color }]}>
-            {factor.result === 'pass' ? '✓' : factor.result === 'caution' ? '⚠' : factor.result === 'fail' ? '✕' : '—'}
-          </Text>
+          <Icon name={factor.result === 'pass' ? 'check' : factor.result === 'caution' ? 'alert-triangle' : factor.result === 'fail' ? 'x' : 'info'} color={color} />
         </View>
         <View style={styles.headerContent}>
           <Text style={styles.name}>{label}</Text>
           <Text style={[styles.result, { color }]}>{resultLabel}</Text>
         </View>
-        <Text style={[styles.chevron, { color: theme.colors.text.tertiary }]}>
-          {expanded ? '▲' : '▼'}
-        </Text>
+        <Icon name={expanded ? 'chevron-up' : 'chevron-down'} color={theme.colors.text.tertiary} size="sm" />
       </TouchableOpacity>
 
       {expanded && (
         <View style={styles.reasonContainer}>
-          <Text style={styles.reason} numberOfLines={2}>
+          <Text style={styles.reason}>
             {factor.reason}
           </Text>
         </View>
@@ -86,20 +84,13 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.md,
     width: '100%',
   },
-  chevron: {
-    fontSize: theme.typography.size.xs,
-    fontWeight: theme.typography.weight.medium,
-  },
   header: {
     alignItems: 'center',
     flexDirection: 'row',
+    minHeight: theme.spacing.xxxl,
   },
   headerContent: {
     flex: 1,
-  },
-  icon: {
-    fontSize: theme.typography.size.lg,
-    fontWeight: theme.typography.weight.semibold,
   },
   iconContainer: {
     alignItems: 'center',

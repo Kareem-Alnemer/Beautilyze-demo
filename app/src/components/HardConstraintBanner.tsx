@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { Text } from './ui/Text';
 import { theme } from '../theme';
+import { Icon } from './ui/Icon';
 import { Verdict } from '../verdict/types';
 
 interface HardConstraintBannerProps {
@@ -44,9 +46,7 @@ export const HardConstraintBanner: React.FC<HardConstraintBannerProps> = ({
       {flagged.map((hc, index) => (
         <View key={`${hc.name}-${index}`} style={styles.row}>
           <View style={styles.iconContainer}>
-            <Text style={[styles.icon, { color: resultColors[hc.result] }]}>
-              {hc.result === 'pass' ? '✓' : hc.result === 'caution' ? '⚠' : '✕'}
-            </Text>
+            <Icon name={hc.result === 'pass' ? 'check' : hc.result === 'caution' ? 'alert-triangle' : hc.result === 'fail' ? 'x' : 'info'} color={resultColors[hc.result]} />
           </View>
           <View style={styles.content}>
             <Text style={styles.name}>{constraintLabels[hc.name] || hc.name}</Text>
@@ -87,10 +87,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.08 * theme.typography.size.xs,
     marginBottom: theme.spacing.sm,
     textTransform: 'uppercase',
-  },
-  icon: {
-    fontSize: theme.typography.size.md,
-    fontWeight: theme.typography.weight.semibold,
   },
   iconContainer: {
     alignItems: 'center',

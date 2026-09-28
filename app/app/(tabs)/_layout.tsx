@@ -1,28 +1,25 @@
 import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '../../src/components/ui/Icon';
+import { FontsReadyContext } from '../../src/components/ui/Text';
+import { useContext } from 'react';
 import { theme } from '../../src/theme';
-import { Platform } from 'react-native';
 
 export default function TabLayout() {
+  const fontsReady = useContext(FontsReadyContext);
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: theme.colors.verdict.match,
+        tabBarActiveTintColor: theme.colors.brand.ink,
         tabBarInactiveTintColor: theme.colors.text.tertiary,
         tabBarStyle: {
           backgroundColor: theme.colors.surface.base,
           borderTopWidth: 1,
           borderTopColor: theme.colors.surface.rule,
-          height: Platform.OS === 'ios' ? 88 : 80,
-          paddingBottom: Platform.OS === 'ios' ? 12 : 0,
         },
         tabBarLabelStyle: {
-          fontFamily: theme.typography.font.body,
+          fontFamily: fontsReady ? theme.typography.face.bodyMedium : undefined,
           fontSize: theme.typography.size.xs,
-          fontWeight: theme.typography.weight.medium,
-        },
-        tabBarIconStyle: {
-          marginBottom: 2,
+          fontWeight: theme.typography.weight.regular,
         },
         headerShown: false,
       }}
@@ -31,10 +28,9 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ focused, color }) => (
-            <Ionicons
-              name={focused ? 'home' : 'home-outline'}
-              size={24}
+          tabBarIcon: ({ color }) => (
+            <Icon
+              name="home"
               color={color}
             />
           ),
@@ -44,10 +40,9 @@ export default function TabLayout() {
         name="scan"
         options={{
           title: 'Scan',
-          tabBarIcon: ({ focused, color }) => (
-            <Ionicons
-              name={focused ? 'camera' : 'camera-outline'}
-              size={24}
+          tabBarIcon: ({ color }) => (
+            <Icon
+              name="camera"
               color={color}
             />
           ),
@@ -57,10 +52,9 @@ export default function TabLayout() {
         name="search"
         options={{
           title: 'Search',
-          tabBarIcon: ({ focused, color }) => (
-            <Ionicons
-              name={focused ? 'search' : 'search-outline'}
-              size={24}
+          tabBarIcon: ({ color }) => (
+            <Icon
+              name="search"
               color={color}
             />
           ),
@@ -70,10 +64,9 @@ export default function TabLayout() {
         name="history"
         options={{
           title: 'History',
-          tabBarIcon: ({ focused, color }) => (
-            <Ionicons
-              name={focused ? 'time' : 'time-outline'}
-              size={24}
+          tabBarIcon: ({ color }) => (
+            <Icon
+              name="history"
               color={color}
             />
           ),
@@ -83,10 +76,9 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ focused, color }) => (
-            <Ionicons
-              name={focused ? 'person' : 'person-outline'}
-              size={24}
+          tabBarIcon: ({ color }) => (
+            <Icon
+              name="user"
               color={color}
             />
           ),

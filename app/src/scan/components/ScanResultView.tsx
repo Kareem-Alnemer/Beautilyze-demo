@@ -6,7 +6,8 @@
  */
 
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Image, ScrollView } from 'react-native';
+import { Text } from '../../components/ui/Text';
 import { theme } from '../../theme';
 import { ScanResult, ConfidenceEvaluation } from '../types';
 

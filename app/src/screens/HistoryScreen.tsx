@@ -1,15 +1,6 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  SafeAreaView,
-  RefreshControl,
-  TouchableOpacity,
-  Image,
-  ActivityIndicator,
-} from 'react-native';
+import { View, FlatList, StyleSheet, SafeAreaView, RefreshControl, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { Text } from '../components/ui/Text';
 import { theme } from '../theme';
 import { getScanHistory, ScanHistoryItem } from '../catalog/api';
 import { useProfileStore } from '../profile/store';

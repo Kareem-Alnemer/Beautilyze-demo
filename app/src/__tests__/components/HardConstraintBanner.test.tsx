@@ -1,6 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import { HardConstraintBanner } from '../../components/HardConstraintBanner';
+import { Icon } from '../../components/ui/Icon';
 
 describe('HardConstraintBanner', () => {
   it('renders nothing when all constraints pass', () => {
@@ -80,7 +81,7 @@ describe('HardConstraintBanner', () => {
   });
 
   it('shows correct icons for each result type', () => {
-    const { getAllByText } = render(
+    const { UNSAFE_getAllByType } = render(
       React.createElement(HardConstraintBanner, {
         hardConstraints: [
           { name: 'declared_allergen_conflict', result: 'fail', reason: '' },
@@ -90,10 +91,6 @@ describe('HardConstraintBanner', () => {
       })
     );
 
-    // fail shows ✕, caution shows ⚠, insufficient_data shows ✕ (per component logic)
-    const failIcons = getAllByText('✕');
-    const cautionIcons = getAllByText('⚠');
-    expect(failIcons.length).toBe(2); // fail + insufficient_data both show ✕
-    expect(cautionIcons.length).toBe(1); // only caution shows ⚠
+    expect(UNSAFE_getAllByType(Icon).map((icon) => icon.props.name)).toEqual(['x', 'alert-triangle', 'info']);
   });
 });

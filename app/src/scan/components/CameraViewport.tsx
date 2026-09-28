@@ -5,9 +5,11 @@
  */
 
 import React, { useRef, useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Platform } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, ActivityIndicator, Platform } from 'react-native';
+import { Text } from '../../components/ui/Text';
 import { Camera, CameraView, CameraType } from 'expo-camera';
 import { theme } from '../../theme';
+import { Icon } from '../../components/ui/Icon';
 
 interface CameraViewportProps {
   onAnalyze: (uri: string) => void;
@@ -115,7 +117,7 @@ export const CameraViewport: React.FC<CameraViewportProps> = ({
             disabled={isCapturing}
             accessibilityLabel="Flip camera"
           >
-            <Text style={styles.controlButtonText}>\u21C5</Text>
+            <Icon name="switch-camera" />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -141,7 +143,7 @@ export const CameraViewport: React.FC<CameraViewportProps> = ({
             disabled={isCapturing}
             accessibilityLabel="Choose from gallery"
           >
-            <Text style={styles.controlButtonText}>\u25B6</Text>
+            <Icon name="images" />
           </TouchableOpacity>
         </View>
       </CameraView>
@@ -199,7 +201,6 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     width: 56,
   },
-  controlButtonText: { color: theme.colors.text.primary, fontSize: theme.typography.size.lg },
   controls: {
     alignItems: 'center',
     flexDirection: 'row',

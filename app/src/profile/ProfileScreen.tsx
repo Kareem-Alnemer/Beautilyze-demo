@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { supabase } from '../lib/supabase';
-import { View, ScrollView, Text, StyleSheet, SafeAreaView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, ScrollView, StyleSheet, SafeAreaView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { Text } from '../components/ui/Text';
 import { theme } from '../theme';
 import { useProfileStore, selectUserSkinType, selectUserAcneSeverity, selectAIProfile } from './store';
 import { SkinTypeSelector } from './components/SkinTypeSelector';

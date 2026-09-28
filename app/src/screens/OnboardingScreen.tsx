@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { View, ScrollView, Text, TouchableOpacity, StyleSheet, SafeAreaView, ActivityIndicator } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { View, ScrollView, StyleSheet, SafeAreaView, KeyboardAvoidingView, Platform } from 'react-native';
+import { Text } from '../components/ui/Text';
 import { useRouter } from 'expo-router';
 import { theme } from '../theme';
 import { useProfileStore } from '../profile/store';
@@ -8,6 +9,7 @@ import { AcneSeveritySelector } from '../profile/components/AcneSeveritySelector
 import { AgeInput } from '../profile/components/AgeInput';
 import { AllergyManager } from '../profile/components/AllergyManager';
 import { SensitivityManager } from '../profile/components/SensitivityManager';
+import { Button } from '../components/ui/Button';
 
 /**
  * OnboardingScreen — first-run baseline form (blueprint §4.2).
@@ -18,10 +20,11 @@ import { SensitivityManager } from '../profile/components/SensitivityManager';
  */
 export const OnboardingScreen: React.FC = () => {
   const router = useRouter();
-  const { colors, spacing } = theme;
+  const { colors } = theme;
   const [showValidation, setShowValidation] = useState(false);
   const [syncError, setSyncError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const pending = useRef(false);
 
   const userId = useProfileStore((s) => s.user_id);
   const userSkinType = useProfileStore((s) => s.user_skin_type);
@@ -39,41 +42,43 @@ export const OnboardingScreen: React.FC = () => {
   const removeSensitivity = useProfileStore((s) => s.removeSensitivity);
 
   const handleSubmit = async () => {
-    if (submitting) return;
+    if (pending.current) return;
     if (!useProfileStore.getState().user_skin_type) {
       setShowValidation(true);
       return;
     }
     setShowValidation(false);
     setSyncError('');
+    pending.current = true;
     setSubmitting(true);
     try {
-      await useProfileStore.getState().setHasCompletedOnboarding(true);
       if (useProfileStore.getState().user_id) {
-        try {
-          await useProfileStore.getState().persistToSupabase();
-        } catch {
-          setSyncError("We couldn't save to your account. Your entries are kept on this device.");
-        }
+        await useProfileStore.getState().persistToSupabase();
       }
-    } finally {
-      setSubmitting(false);
+      await useProfileStore.getState().setHasCompletedOnboarding(true);
       router.replace('/');
+    } catch {
+      setSyncError("We couldn't save to your account. Your entries remain in this session. Retry or continue without saving.");
+    } finally {
+      pending.current = false;
+      setSubmitting(false);
     }
   };
 
-  // Intentionally pressable while invalid so the validation notice can
-  // fire; submission itself is gated on skin type inside handleSubmit.
   const ready = userSkinType !== null && !submitting;
 
   return (
     <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView style={styles.keyboard} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.text.primary }]}>Welcome to BeautiLyze</Text>
+          <Text accessibilityRole="header" style={[styles.title, { color: colors.text.primary }]}>Welcome to BeautiLyze</Text>
           <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
             Set your baseline once. You can change everything later in Profile.
           </Text>
+          {!userId && <Text style={[styles.helper, { color: colors.text.secondary }]}>
+            Guest profile: entries last for this session and are not saved to an account.
+          </Text>}
         </View>
 
         <View style={styles.section}>
@@ -112,30 +117,18 @@ export const OnboardingScreen: React.FC = () => {
           </Text>
         )}
         {syncError ? (
-          <Text style={[styles.notice, { color: colors.verdict.caution }]}>{syncError}</Text>
+          <Text accessibilityRole="alert" style={[styles.notice, { color: colors.text.primary }]}>{syncError}</Text>
         ) : null}
 
         <View style={styles.submitContainer}>
-          <TouchableOpacity
-            testID="onboarding-submit"
-            onPress={handleSubmit}
-            disabled={submitting}
-            accessibilityLabel="Get started"
-            accessibilityState={{ disabled: !ready }}
-            style={[
-              styles.submitButton,
-              { backgroundColor: colors.brand.accent },
-              !ready && styles.submitButtonDisabled,
-            ]}
-          >
-            {submitting ? (
-              <ActivityIndicator color={colors.text.onAccent} />
-            ) : (
-              <Text style={styles.submitButtonText}>Get started</Text>
-            )}
-          </TouchableOpacity>
+          <Button title={submitting ? 'Saving...' : syncError ? 'Retry save' : 'Get started'}
+            onPress={handleSubmit} disabled={!ready} busy={submitting} />
+          {syncError && <Button title="Continue without saving" variant="text" disabled={submitting} onPress={() => {
+            void useProfileStore.getState().setHasCompletedOnboarding(true).then(() => router.replace('/'));
+          }} />}
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -154,6 +147,7 @@ const styles = StyleSheet.create({
     lineHeight: theme.typography.lineHeight.normal * theme.typography.size.sm,
     marginTop: theme.spacing.sm,
   },
+  keyboard: { flex: 1 },
   notice: {
     fontFamily: theme.typography.font.body,
     fontSize: theme.typography.size.md,
@@ -171,20 +165,6 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.size.lg,
     fontWeight: theme.typography.weight.semibold,
     marginBottom: theme.spacing.sm,
-  },
-  submitButton: {
-    alignItems: 'center',
-    borderRadius: theme.radii.md,
-    paddingVertical: theme.spacing.md,
-  },
-  submitButtonDisabled: {
-    opacity: 0.5,
-  },
-  submitButtonText: {
-    color: theme.colors.text.onAccent,
-    fontFamily: theme.typography.font.body,
-    fontSize: theme.typography.size.lg,
-    fontWeight: theme.typography.weight.semibold,
   },
   submitContainer: {
     marginBottom: theme.spacing.lg,

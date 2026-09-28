@@ -2,6 +2,7 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { FactorBreakdownCard } from '../../components/FactorBreakdownCard';
 import type { FactorResult } from '../../verdict/types';
+import { Icon } from '../../components/ui/Icon';
 
 describe('FactorBreakdownCard', () => {
   const baseFactor: FactorResult = {
@@ -18,32 +19,31 @@ describe('FactorBreakdownCard', () => {
   });
 
   it('shows pass icon for pass result', () => {
-    const { getByText } = render(React.createElement(FactorBreakdownCard, { factor: baseFactor, index: 0 }));
-
-    expect(getByText('✓')).toBeTruthy();
+    const screen = render(React.createElement(FactorBreakdownCard, { factor: baseFactor, index: 0 }));
+    expect(screen.UNSAFE_getAllByType(Icon)[0].props.name).toBe('check');
   });
 
   it('shows caution icon for caution result', () => {
     const factor = { ...baseFactor, result: 'caution' as const };
-    const { getByText } = render(React.createElement(FactorBreakdownCard, { factor, index: 0 }));
+    const { getByText, UNSAFE_getAllByType } = render(React.createElement(FactorBreakdownCard, { factor, index: 0 }));
 
-    expect(getByText('⚠')).toBeTruthy();
+    expect(UNSAFE_getAllByType(Icon)[0].props.name).toBe('alert-triangle');
     expect(getByText('Caution')).toBeTruthy();
   });
 
   it('shows fail icon for fail result', () => {
     const factor = { ...baseFactor, result: 'fail' as const };
-    const { getByText } = render(React.createElement(FactorBreakdownCard, { factor, index: 0 }));
+    const { getByText, UNSAFE_getAllByType } = render(React.createElement(FactorBreakdownCard, { factor, index: 0 }));
 
-    expect(getByText('✕')).toBeTruthy();
+    expect(UNSAFE_getAllByType(Icon)[0].props.name).toBe('x');
     expect(getByText('Mismatch')).toBeTruthy();
   });
 
-  it('shows dash for insufficient_data', () => {
+  it('shows an information icon for insufficient_data', () => {
     const factor = { ...baseFactor, result: 'insufficient_data' as const };
-    const { getByText } = render(React.createElement(FactorBreakdownCard, { factor, index: 0 }));
+    const { getByText, UNSAFE_getAllByType } = render(React.createElement(FactorBreakdownCard, { factor, index: 0 }));
 
-    expect(getByText('—')).toBeTruthy();
+    expect(UNSAFE_getAllByType(Icon)[0].props.name).toBe('info');
     expect(getByText('Insufficient data')).toBeTruthy();
   });
 
@@ -81,7 +81,7 @@ describe('FactorBreakdownCard', () => {
     expect(getByText('Age fit')).toBeTruthy();
   });
 
-  it('limits reason to 2 lines', () => {
+  it('does not truncate the expanded explanation on narrow screens', () => {
     const longReason = 'This is a very long reason that should be truncated to two lines maximum when displayed in the factor breakdown card.';
     const factor = { ...baseFactor, reason: longReason };
     const { getByText } = render(React.createElement(FactorBreakdownCard, { factor, index: 0 }));
@@ -89,6 +89,6 @@ describe('FactorBreakdownCard', () => {
     fireEvent.press(getByText('Skin-type fit'));
 
     const reasonText = getByText(longReason);
-    expect(reasonText.props.numberOfLines).toBe(2);
+    expect(reasonText.props.numberOfLines).toBeUndefined();
   });
 });
